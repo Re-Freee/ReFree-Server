@@ -1,11 +1,18 @@
 package refree.backend.module.member;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,13 +22,39 @@ public class Member {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "check_password")
+    private String checkPassword;
+
     @Column(name = "password", nullable = false)
     private String password;
 
-    public static Member crateMember(String email, String password) {
-        Member member = new Member();
-        member.email = email;
-        member.password = password;
-        return member;
+    @Column(name = "nickname", length = 8, nullable = false)
+    private String nickname;
+
+    @Column(name = "is_change", nullable = false)
+    private int isChange;
+
+    public int getIsChange(){
+        return isChange;
+    }
+
+    public void encodePassword(PasswordEncoder passwordEncoder){
+        this.password = passwordEncoder.encode(password);
+    }
+
+    public void encodeCheckPassword(PasswordEncoder passwordEncoder){
+        this.checkPassword = passwordEncoder.encode(checkPassword);
+    }
+
+    public void updatePassword(String newPassword){
+        this.password = newPassword;
+    }
+
+    public void updateCheckPassword(String newCheckPassword){
+        this.checkPassword = newCheckPassword;
+    }
+
+    public void updateFlag(int isChange){
+        this.isChange = isChange;
     }
 }

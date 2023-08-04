@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .apply(new MyCustomDsl())
                 .and()
                 .authorizeRequests()
-                .antMatchers("/home", "/signup").permitAll()
+                .antMatchers("/home","/signup").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .logout()
@@ -47,7 +47,6 @@ public class SecurityConfig {
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(new CustomAuthenticationEntryPoint(objectMapper))
-                //.accessDeniedHandler(new CustomAccessDeniedHandler(objectMapper))
                 .and().build();
     }
 

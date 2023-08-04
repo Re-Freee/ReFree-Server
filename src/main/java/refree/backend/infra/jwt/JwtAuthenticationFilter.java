@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         UsernamePasswordAuthenticationToken authenticationToken
                 = new UsernamePasswordAuthenticationToken(
                         new PrincipalDetails(jwtService.getMemberByEmail(memberLoginDto.getEmail())),
-                memberLoginDto.getPassword());
+                jwtService.passwordEncoding(memberLoginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(
                 authenticationToken
         );

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import refree.backend.infra.exception.MemberException;
 import refree.backend.module.member.Member;
 import refree.backend.module.member.MemberLoginDto;
 import refree.backend.module.member.MemberRepository;
@@ -30,6 +31,10 @@ public class JwtService {
         // email 존재 확인
         if (!memberRepository.existsByEmail(memberLoginDto.getEmail())) {
             return "존재하지 않는 회원";
+        }
+        Member member = memberRepository.findByEmail(memberLoginDto.getEmail()).get();
+        if (!passwordEncoder.matches(memberLoginDto.getPassword(), member.getPassword())) {
+            return "비밀번호가 올바르지 않습니다";
         }
         return "existing";
     }
