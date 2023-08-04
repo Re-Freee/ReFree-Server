@@ -10,7 +10,6 @@ import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.SingleResponse;
 
 import javax.validation.Valid;
-import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
