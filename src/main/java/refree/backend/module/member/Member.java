@@ -42,16 +42,9 @@ public class Member {
         this.password = passwordEncoder.encode(password);
     }
 
-    public void encodeCheckPassword(PasswordEncoder passwordEncoder){
-        this.checkPassword = passwordEncoder.encode(checkPassword);
-    }
 
-    public void updatePassword(String newPassword){
-        this.password = newPassword;
-    }
-
-    public void updateCheckPassword(String newCheckPassword){
-        this.checkPassword = newCheckPassword;
+    public void updatePassword(PasswordEncoder passwordEncoder, String newPassword){
+        this.password = passwordEncoder.encode(newPassword);
     }
 
     public void updateFlag(int isChange){

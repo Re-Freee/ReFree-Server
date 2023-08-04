@@ -21,9 +21,8 @@ public class MemberPwSearchDto {
     private String email;
 
     public Member toEntity(){
-        Member member = Member.builder()
+        return Member.builder()
                 .email(email).build();
-        return member;
     }
 
 }

@@ -1,18 +1,13 @@
 package refree.backend.module.member;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
-@Getter
+
+@Data
 public class MemberPwModifyDto {
     @NotBlank(message = "이메일을 입력해 주세요.")
     @Size(max = 40, message = "이메일은 40자 내로 입력해 주세요.")
@@ -25,11 +20,4 @@ public class MemberPwModifyDto {
 
     @NotBlank(message = "새 비밀번호를 다시 입력해 주세요.")
     private String checkNewPassword;
-
-    public Member toEntity(){
-        Member member = Member.builder()
-                .password(newPassword)
-                .checkPassword(checkNewPassword).build();
-        return member;
-    }
 }
