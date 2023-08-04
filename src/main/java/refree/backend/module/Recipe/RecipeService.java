@@ -13,6 +13,7 @@ import refree.backend.infra.exception.NotFoundException;
 import refree.backend.module.Category.CategoryRepository;
 import refree.backend.module.Recipe.Dto.ManuelDto;
 import refree.backend.module.Recipe.Dto.RecipeDto;
+import refree.backend.module.Recipe.Dto.RecipeSearch;
 import refree.backend.module.Recipe.Dto.RecipeViewDto;
 
 import javax.annotation.PostConstruct;
@@ -152,6 +153,19 @@ public class RecipeService {
                             .build()).collect(Collectors.toList());*/
         }
         return List.of();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecipeDto> search(RecipeSearch recipeSearch) {
+        List<Recipe> recipes = recipeRepository.searchRecipe(recipeSearch);
+        return recipes.stream()
+                .map(recipe -> RecipeDto.builder()
+                        .id(recipe.getId())
+                        .name(recipe.getName())
+                        .calorie(recipe.getCalorie())
+                        .ingredient(recipe.getIngredient())
+                        .image(recipe.getImageUrl())
+                        .build()).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

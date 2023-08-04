@@ -7,6 +7,7 @@ import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.GeneralResponse;
 import refree.backend.module.Recipe.Dto.IngredientsDto;
 import refree.backend.module.Recipe.Dto.RecipeDto;
+import refree.backend.module.Recipe.Dto.RecipeSearch;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -28,5 +29,11 @@ public class RecipeController {
     public ResponseEntity<? extends BasicResponse> viewRecipe(@PathVariable Long recipeId) {
         return ResponseEntity.ok()
                 .body(new GeneralResponse<>(recipeService.recipeView(recipeId), "RECIPE_DETAIL"));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<? extends BasicResponse> search(@ModelAttribute RecipeSearch recipeSearch) {
+        return ResponseEntity.ok()
+                .body(new GeneralResponse<>(recipeService.search(recipeSearch), "RECIPE_SEARCH_RESULT"));
     }
 }
