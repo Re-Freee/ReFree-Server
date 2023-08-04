@@ -11,6 +11,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import refree.backend.infra.exception.NotFoundException;
 import refree.backend.module.Category.CategoryRepository;
+import refree.backend.module.Recipe.Dto.ManuelDto;
+import refree.backend.module.Recipe.Dto.RecipeDto;
+import refree.backend.module.Recipe.Dto.RecipeViewDto;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -149,5 +152,36 @@ public class RecipeService {
                             .build()).collect(Collectors.toList());*/
         }
         return List.of();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecipeViewDto> recipeView(Long recipeId) {
+        // 레시피 존재하는지 확인
+        Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(() -> new NotFoundException("NO_RECIPE_EXIST"));
+        return List.of(RecipeViewDto.getRecipeViewDto(recipe, createManuelDtos(recipe)));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ManuelDto> createManuelDtos(Recipe recipe) {
+        List<ManuelDto> manuelDtos = new ArrayList<>();
+        if (recipe.getManuel1() != null && !recipe.getManuel1().isEmpty()) {
+            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel1(), recipe.getManuelUrl1()));
+        }
+        if (recipe.getManuel2() != null && !recipe.getManuel2().isEmpty()) {
+            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel2(), recipe.getManuelUrl2()));
+        }
+        if (recipe.getManuel3() != null && !recipe.getManuel3().isEmpty()) {
+            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel3(), recipe.getManuelUrl3()));
+        }
+        if (recipe.getManuel4() != null && !recipe.getManuel4().isEmpty()) {
+            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel4(), recipe.getManuelUrl4()));
+        }
+        if (recipe.getManuel5() != null && !recipe.getManuel5().isEmpty()) {
+            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel5(), recipe.getManuelUrl5()));
+        }
+        if (recipe.getManuel6() != null && !recipe.getManuel6().isEmpty()) {
+            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel6(), recipe.getManuelUrl6()));
+        }
+        return manuelDtos;
     }
 }
