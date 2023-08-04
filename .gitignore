@@ -1,0 +1,55 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+## .properties file ##
+src/main/**/application.properties
+src/main/**/application.yml
+
+src/main/resources/recipe_data1.json
+src/main/resources/recipe_data2.json
+src/main/resources/recipe_data3.json
+src/main/resources/recipe_data4.json
+src/main/resources/recipe_data5.json
+src/main/resources/recipe_data6.json
+src/main/resources/recipe_data7.json
+src/main/resources/recipe_data8.json
+src/main/resources/recipe_data9.json
+src/main/resources/recipe_data10.json
+src/main/resources/recipe_data11.json
+src/main/resources/category_data.txt
+/src/main/java/refree/backend/infra/jwt/JwtProperties.java
