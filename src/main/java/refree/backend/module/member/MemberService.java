@@ -6,18 +6,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import refree.backend.infra.exception.MemberException;
 import refree.backend.infra.response.SingleResponse;
+import refree.backend.module.Recipe.*;
 import refree.backend.module.Recipe.Dto.RecipeLikeDto;
-import refree.backend.module.Recipe.Recipe;
 import refree.backend.module.RecipeLike.RecipeLike;
 import refree.backend.module.RecipeLike.RecipeLikeRepository;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.UUID;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
+@Transactional
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -26,7 +29,7 @@ public class MemberService {
 
 
     // 회원가입
-    public SingleResponse signup(MemberSignupDto memberSignupDto) {
+    public SingleResponse signup(MemberSignupDto memberSignupDto, HttpServletResponse response) {
 
         // 이미 존재하는 이메일
         if (memberRepository.existsByEmail(memberSignupDto.getEmail())){
@@ -40,14 +43,24 @@ public class MemberService {
 
         Member member = memberSignupDto.toEntity();
         member.encodePassword(passwordEncoder);
+
+        // 인증번호 발급
+        String certification = UUID.randomUUID().toString();
+        member.setCertification(certification);
+
         memberRepository.save(member);
 
+        response.addHeader("Certification", certification);
         return new SingleResponse(201, "REGISTRATION_COMPLETE");
     }
 
     public SingleResponse search(MemberPwSearchDto memberPwSearchDto) {
         Member member = memberRepository.findByEmail(memberPwSearchDto.getEmail())
                 .orElseThrow(() -> new MemberException("존재하지 않는 계정입니다."));
+
+        if (!memberPwSearchDto.getCertification().equals(member.getCertification())){
+            throw new MemberException("인증번호가 일치하지 않습니다.");
+        }
 
         member.updateFlag(1); // 비밀번호를 바꾸기 위한 flag 설정
 
