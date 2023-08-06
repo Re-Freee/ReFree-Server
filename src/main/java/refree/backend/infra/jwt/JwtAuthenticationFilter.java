@@ -18,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -34,7 +35,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String result = jwtService.verifyNewMemberOrNot(memberLoginDto);
+
+        Optional<Member> byEmail = jwtService.getOptionalMemberByEmail(memberLoginDto.getEmail());
+        String result = jwtService.verifyNewMemberOrNot(byEmail, memberLoginDto);
         if (result.equals("존재하지 않는 회원") || result.equals("비밀번호가 올바르지 않습니다")) {
             try {
                 setBodyResponse(response, 400, result);
@@ -46,7 +49,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         UsernamePasswordAuthenticationToken authenticationToken
                 = new UsernamePasswordAuthenticationToken(
-                        new PrincipalDetails(jwtService.getMemberByEmail(memberLoginDto.getEmail())),
+                        new PrincipalDetails(byEmail.get()),
                 jwtService.passwordEncoding(memberLoginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(
                 authenticationToken
@@ -66,7 +69,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String accessToken = jwtService.createAccessToken(member.getEmail());
         response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + accessToken);
         // 기존회원이 로그인 시도 하는 경우
-        setBodyResponse(response, 200, "로그인 성공");
+        setBodyResponse(response, 200, "LOGIN_COMPLETE");
     }
 
     private void setBodyResponse(HttpServletResponse response, int code, String message)
