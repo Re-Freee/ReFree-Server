@@ -1,4 +1,4 @@
-package refree.backend.module.Recipe;
+package refree.backend.module.Recipe.Dto;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.UniqueElements;

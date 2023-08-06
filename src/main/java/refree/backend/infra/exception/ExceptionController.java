@@ -18,6 +18,13 @@ import java.util.Objects;
 @RestControllerAdvice // 모든 Controller 전역에서 발생할 수 있는 예외를 잡아 처리해주는 어노테이션 - filter에서 발생하는 에러 제외
 public class ExceptionController {
 
+    @ExceptionHandler(ParsingException.class)
+    public ResponseEntity<? extends BasicResponse> ParsingException(ParsingException e){
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<? extends BasicResponse> UserNotFoundException(MemberException e){
         e.printStackTrace();

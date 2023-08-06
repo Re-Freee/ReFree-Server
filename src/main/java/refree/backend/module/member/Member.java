@@ -5,8 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import refree.backend.module.RecipeLike.RecipeLike;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -17,7 +20,7 @@ public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
-    private int id;
+    private Long id;
 
     @Column(name = "email", unique = true, nullable = false)
     private String email;
@@ -33,6 +36,13 @@ public class Member {
 
     @Column(name = "is_change", nullable = false)
     private int isChange;
+
+    @OneToMany(mappedBy = "member")
+    private Set<RecipeLike> likes = new HashSet<>();
+
+    public void deleteRecipeFromLikes(RecipeLike recipeLike) {
+        likes.remove(recipeLike);
+    }
 
     public int getIsChange(){
         return isChange;

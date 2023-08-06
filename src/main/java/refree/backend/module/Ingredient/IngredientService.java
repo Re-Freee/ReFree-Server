@@ -1,59 +1,63 @@
 package refree.backend.module.Ingredient;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import refree.backend.infra.exception.NotFoundException;
+import refree.backend.infra.exception.ParsingException;
+import refree.backend.module.Category.Category;
+import refree.backend.module.Category.CategoryRepository;
+import refree.backend.module.Ingredient.Dto.IngredientDto;
+import refree.backend.module.Ingredient.Dto.IngredientResponseDto;
+import refree.backend.module.Ingredient.Dto.IngredientSearch;
+import refree.backend.module.member.Member;
+import refree.backend.module.member.MemberRepository;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.transaction.Transactional;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.sql.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
+@Service
 @Transactional
-@Component
+@RequiredArgsConstructor
 public class IngredientService {
-    @Value("${serviceKey}")
-    private String serviceKey;
+
     private final IngredientRepository ingredientRepository;
-    public IngredientService(IngredientRepository ingredientRepository){
-        this.ingredientRepository=ingredientRepository;
-    }
-    public void create(Ingredient ingredient) throws IOException {
+    private final MemberRepository memberRepository;
+    private final CategoryRepository categoryRepository;
+
+    public void create(IngredientDto ingredientDto, Long memberId) {
+        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 계정입니다."));
+        Category category = categoryRepository.findByName(ingredientDto.getCategory())
+                .orElseThrow(() -> new NotFoundException("NOT_VALID_CATEGORY"));
+        Ingredient ingredient = Ingredient.createIngredient(member, category, localDateFromString, ingredientDto);
         ingredientRepository.save(ingredient);
     }
-    public List<Ingredient> view(int ingredient_id){
-        Optional<Ingredient> ingredient2= ingredientRepository.findById(ingredient_id);
-        Ingredient ingredient1=ingredient2.get();
-        List<Ingredient> checked=new ArrayList<>();
-        checked.add(ingredient1);
-        return checked;
-    }
-    public List<Ingredient> delete(int ingred_id, int cnt, String memo){
-        ingredientRepository.delete(ingred_id,cnt,memo);
-        Ingredient check=view(ingred_id).get(0);
-        check.setQuantity(cnt);
-        check.setContent(memo);
-        List<Ingredient> checked=new ArrayList<>();
-        checked.add(check);
 
-        return checked;
+    @Transactional(readOnly = true)
+    public List<IngredientResponseDto> view(Long ingredientId){
+        Ingredient ingredient = ingredientRepository.findById(ingredientId)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 재료"));
+        return List.of(IngredientResponseDto.getIngredientResponseDto(ingredient));
+    }
+
+    public void update(IngredientDto ingredientDto, Long ingredientId){
+        Ingredient ingredient = ingredientRepository.findById(ingredientId)
+                .orElseThrow(() -> new NotFoundException("존재하지 않는 재료"));
+        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
+        Category category = categoryRepository.findByName(ingredientDto.getCategory())
+                .orElseThrow(() -> new NotFoundException("NOT_VALID_CATEGORY"));
+        ingredient.update(localDateFromString, category, ingredientDto);
     }
     public List<Ingredient> findAllIngredient(int mem_id){
         return ingredientRepository.findAllIngredient(mem_id);
     }
-    public List<Ingredient> closure(int mem_id){ //유통기한이 3일 남은 경우
+
+    /*public List<Ingredient> closure(int mem_id){ //유통기한이 3일 남은 경우
         List<Ingredient> check=findAllIngredient(mem_id);
         List<Ingredient> confirm = new ArrayList<>();
         int[] month={0,31,29,31,30,31,30,31,30,31,30,31,30};
@@ -97,8 +101,9 @@ public class IngredientService {
 
         }
         return confirm;
-    }
-    public List<Ingredient> end(int mem_id){
+    }*/
+
+    /*public List<Ingredient> end(int mem_id){
         List<Ingredient> check=findAllIngredient(mem_id);
         List<Ingredient> confirm =new ArrayList<>();
         for(int i=0;i<check.size();i++){
@@ -124,77 +129,23 @@ public class IngredientService {
             }
         }
         return confirm;
+    }*/
+
+    @Transactional(readOnly = true)
+    public List<IngredientResponseDto> search(IngredientSearch ingredientSearch, Member member) {
+        List<Ingredient> ingredients = ingredientRepository.search(ingredientSearch, member.getId());
+        return ingredients.stream()
+                .map(IngredientResponseDto::getIngredientResponseDto)
+                .collect(Collectors.toList());
     }
 
-    public List<Ingredient> search(String searchKey,int mem_id){
-        String searchKey1="%"+searchKey+"%";
-        return ingredientRepository.search(searchKey1,mem_id);
-    }
-
-    public String ingredientToCategory(String check)  throws IOException, ParseException {
-        StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/1390802/AgriFood/FdFood/getKoreanFoodFdFoodList"); /*URL*/
-        urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "="+serviceKey); /*Service Key*/
-        urlBuilder.append("&" + URLEncoder.encode("service_Type","UTF-8") + "=" + URLEncoder.encode("json", "UTF-8")); /*xml 과 json 형식 지원*/
-        urlBuilder.append("&" + URLEncoder.encode("Page_No","UTF-8") + "=" + URLEncoder.encode("1", "UTF-8")); /*페이지 번호*/
-        urlBuilder.append("&" + URLEncoder.encode("Page_Size","UTF-8") + "=" + URLEncoder.encode("20", "UTF-8")); /*한 페이지 결과 수*/
-        urlBuilder.append("&" + URLEncoder.encode("food_Name","UTF-8") + "=" + URLEncoder.encode(check, "UTF-8")); /*음식 명 (검색어 입력값 포함 검색)*/
-        URL url = new URL(urlBuilder.toString());
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode());
-        BufferedReader rd;
-        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-        } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+    @Transactional(readOnly = true)
+    public LocalDate getLocalDateFromString(String period) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        try {
+            return LocalDate.parse(period, dateTimeFormatter);
+        } catch (DateTimeParseException e) {
+            throw new ParsingException("PARSING_ERROR");
         }
-
-
-        JSONParser parser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) parser.parse(rd);
-
-        rd.close();
-        conn.disconnect();
-        JSONObject cookObject=(JSONObject) jsonObject.get("response");
-        JSONArray recipeArray=(JSONArray) cookObject.get("list");
-        String index;
-        List<String> confirm=new ArrayList<>();
-        for(int i=0;i<recipeArray.size();i++){
-            JSONObject recipeObject=(JSONObject) recipeArray.get(i); //no 1을 가지고 온다
-            JSONArray recipeArray1=(JSONArray) recipeObject.get("food_List");
-            for(int j=0;j<recipeArray1.size();j++){
-                JSONObject checks=(JSONObject) recipeArray1.get(j);
-                index=(String)checks.get("fd_Eng_Nm");
-                confirm.add(index);
-            }
-        }
-        List<String> outside=new ArrayList<>();
-        for(int i=0;i<confirm.size();i++){
-            String inside=confirm.get(i);
-            String[] insideArray=inside.split(",");
-            outside.add(insideArray[0]);
-        }
-
-        // 각 원소의 빈도를 계산하여 Map에 저장
-        Map<String, Integer> frequencyMap = new HashMap<>();
-        for (String element : outside) {
-            frequencyMap.put(element, frequencyMap.getOrDefault(element, 0) + 1);
-        }
-
-        // 최댓값을 찾기 위해 최댓값을 초기화
-        int maxFrequency = 0;
-        String mostFrequentElement = null;
-
-        // Map의 엔트리들을 순회하면서 최댓값을 찾음
-        for (Map.Entry<String, Integer> entry : frequencyMap.entrySet()) {
-            String element = entry.getKey();
-            int frequency = entry.getValue();
-            if (frequency > maxFrequency) {
-                maxFrequency = frequency;
-                mostFrequentElement = element;
-            }
-        }
-        return mostFrequentElement;
     }
 }

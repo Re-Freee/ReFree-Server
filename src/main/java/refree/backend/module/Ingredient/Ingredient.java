@@ -1,87 +1,57 @@
 package refree.backend.module.Ingredient;
 
+import lombok.Getter;
+import refree.backend.module.Category.Category;
+import refree.backend.module.Ingredient.Dto.IngredientDto;
+import refree.backend.module.member.Member;
+
 import javax.persistence.*;
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Entity
+@Getter
 public class Ingredient {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ingredient_id")
-    private int ingredient_id;
+    private Long id;
     private String name;
-    private Date period;
+    private LocalDate period;
     private int quantity;
+    @Column(length = 100)
     private String content;
-    private int options;
-    @Column(name = "Member_member_id")
-    private int member_id;
-    @Column(name = "Image_image")
-    private int image;
+    private int options; // 0:실온 | 1:냉장 | 2:냉동 | 3:기타
 
-    public int getIngredient_id() {
-        return ingredient_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    //TODO: 이미지 테이블 OneToOne
+
+    public static Ingredient createIngredient(Member member, Category category,
+                                              LocalDate period, IngredientDto ingredientDto) {
+        Ingredient ingredient = new Ingredient();
+        ingredient.name = ingredientDto.getName();
+        ingredient.period = period;
+        ingredient.quantity = ingredientDto.getQuantity();
+        ingredient.content = ingredientDto.getContent();
+        ingredient.options = ingredientDto.getOptions();
+        ingredient.member = member;
+        ingredient.category = category;
+        return ingredient;
     }
 
-    public void setIngredient_id(int ingredient_id) {
-        this.ingredient_id = ingredient_id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Date getPeriod() {
-        return period;
-    }
-
-    public void setPeriod(Date period) {
+    public void update(LocalDate period, Category category, IngredientDto ingredientDto) {
+        this.name = ingredientDto.getName();
         this.period = period;
+        this.quantity = ingredientDto.getQuantity();
+        this.content = ingredientDto.getContent();
+        this.options = ingredientDto.getOptions();
+        this.category = category;
     }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public int getOptions() {
-        return options;
-    }
-
-    public void setOptions(int options) {
-        this.options = options;
-    }
-
-    public int getMember_id() {
-        return member_id;
-    }
-
-    public void setMember_id(int member_id) {
-        this.member_id = member_id;
-    }
-
-    public int getImage() {
-        return image;
-    }
-
-    public void setImage(int image) {
-        this.image = image;
-    }
-
-
 }
