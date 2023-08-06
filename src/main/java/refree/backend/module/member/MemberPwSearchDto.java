@@ -20,9 +20,12 @@ public class MemberPwSearchDto {
     @Email(message = "이메일 형식으로 입력해 주세요.")
     private String email;
 
+    @NotBlank(message = "인증번호를 입력해 주세요.")
+    private String certification;
+
     public Member toEntity(){
         return Member.builder()
-                .email(email).build();
+                .email(email).certification(certification).build();
     }
 
 }

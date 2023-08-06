@@ -44,6 +44,9 @@ public class Member {
         likes.remove(recipeLike);
     }
 
+    @Column(name = "certification", nullable = false)
+    private String certification;
+
     public int getIsChange(){
         return isChange;
     }
@@ -59,5 +62,9 @@ public class Member {
 
     public void updateFlag(int isChange){
         this.isChange = isChange;
+    }
+
+    public void setCertification(String certification){
+        this.certification = certification;
     }
 }

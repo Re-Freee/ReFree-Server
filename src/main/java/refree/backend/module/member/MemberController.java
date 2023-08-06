@@ -10,6 +10,7 @@ import refree.backend.infra.config.CurrentUser;
 import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.GeneralResponse;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 @RestController
@@ -20,8 +21,8 @@ public class MemberController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<? extends BasicResponse> signup(@RequestBody @Valid MemberSignupDto memberSignupDto)  {
-        return ResponseEntity.ok().body(memberService.signup(memberSignupDto));
+    public ResponseEntity<? extends BasicResponse> signup(@RequestBody @Valid MemberSignupDto memberSignupDto, HttpServletResponse response)  {
+        return ResponseEntity.ok().body(memberService.signup(memberSignupDto, response));
     }
 
     @PostMapping("/login/search")
