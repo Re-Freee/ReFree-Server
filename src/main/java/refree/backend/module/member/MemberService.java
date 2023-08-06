@@ -6,19 +6,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import refree.backend.infra.exception.MemberException;
 import refree.backend.infra.response.SingleResponse;
+import refree.backend.module.Recipe.Dto.RecipeLikeDto;
+import refree.backend.module.Recipe.Recipe;
+import refree.backend.module.RecipeLike.RecipeLike;
+import refree.backend.module.RecipeLike.RecipeLikeRepository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final RecipeLikeRepository recipeLikeRepository;
     private final PasswordEncoder passwordEncoder;
 
 
     // 회원가입
-    @Transactional
     public SingleResponse signup(MemberSignupDto memberSignupDto) {
 
         // 이미 존재하는 이메일
@@ -38,7 +45,6 @@ public class MemberService {
         return new SingleResponse(201, "REGISTRATION_COMPLETE");
     }
 
-    @Transactional
     public SingleResponse search(MemberPwSearchDto memberPwSearchDto) {
         Member member = memberRepository.findByEmail(memberPwSearchDto.getEmail())
                 .orElseThrow(() -> new MemberException("존재하지 않는 계정입니다."));
@@ -48,7 +54,6 @@ public class MemberService {
         return new SingleResponse(200, "EMAIL_EXIST");
     }
 
-    @Transactional
     public SingleResponse modify(MemberPwModifyDto memberPwModifyDto) {
         Member member = memberRepository.findByEmail(memberPwModifyDto.getEmail())
                 .orElseThrow(() -> new MemberException("존재하지 않는 계정입니다."));
@@ -66,5 +71,12 @@ public class MemberService {
         member.updateFlag(0);
 
         return new SingleResponse(200, "PASSWORD_CHANGE");
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecipeLikeDto> recipeLike(Member member) {
+        List<RecipeLike> recipeLikes = recipeLikeRepository.findByMemberFetchJoinRecipe(member.getId());
+        List<Recipe> recipes = recipeLikes.stream().map(RecipeLike::getRecipe).collect(Collectors.toList());
+        return recipes.stream().map(RecipeLikeDto::getRecipeLikeDto).collect(Collectors.toList());
     }
 }

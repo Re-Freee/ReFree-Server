@@ -12,7 +12,9 @@ import refree.backend.module.member.MemberLoginDto;
 import refree.backend.module.member.MemberRepository;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.Option;
 import java.util.Date;
+import java.util.Optional;
 
 @Getter
 @Service
@@ -27,13 +29,16 @@ public class JwtService {
                 .orElseThrow(() -> new IllegalArgumentException("Bad Request"));
     }
 
-    public String verifyNewMemberOrNot(MemberLoginDto memberLoginDto) {
+    public Optional<Member> getOptionalMemberByEmail(String email) {
+        return memberRepository.findByEmail(email);
+    }
+
+    public String verifyNewMemberOrNot(Optional<Member> byEmail, MemberLoginDto memberLoginDto) {
         // email 존재 확인
-        if (!memberRepository.existsByEmail(memberLoginDto.getEmail())) {
+        if (byEmail.isEmpty()) {
             return "존재하지 않는 회원";
         }
-        Member member = memberRepository.findByEmail(memberLoginDto.getEmail()).get();
-        if (!passwordEncoder.matches(memberLoginDto.getPassword(), member.getPassword())) {
+        if (!passwordEncoder.matches(memberLoginDto.getPassword(), byEmail.get().getPassword())) {
             return "비밀번호가 올바르지 않습니다";
         }
         return "existing";

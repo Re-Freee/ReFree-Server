@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Transactional(readOnly = true)
-public interface RecipeLikeRepository extends JpaRepository<RecipeLike, Long> {
+public interface RecipeLikeRepository extends JpaRepository<RecipeLike, Long>, RecipeLikeRepositoryCustom {
 
     Optional<RecipeLike> findByMemberIdAndRecipeId(Long memberId, Long recipeId);
 }
