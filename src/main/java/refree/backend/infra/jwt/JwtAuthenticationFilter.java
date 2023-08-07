@@ -2,7 +2,6 @@ package refree.backend.infra.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -11,7 +10,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import refree.backend.infra.principal.PrincipalDetails;
 import refree.backend.infra.response.SingleResponse;
 import refree.backend.module.member.Member;
-import refree.backend.module.member.MemberLoginDto;
+import refree.backend.module.member.Dto.MemberLoginDto;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -22,7 +21,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    //private final AuthenticationManager authenticationManager;
+
     private final JwtService jwtService;
     private final ObjectMapper objectMapper;
 
@@ -49,7 +48,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         UsernamePasswordAuthenticationToken authenticationToken
                 = new UsernamePasswordAuthenticationToken(
-                        new PrincipalDetails(byEmail.get()),
+                new PrincipalDetails(byEmail.get()),
                 jwtService.passwordEncoding(memberLoginDto.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(
                 authenticationToken

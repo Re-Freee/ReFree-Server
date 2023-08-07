@@ -27,21 +27,21 @@ public class ExceptionController {
     }
 
     @ExceptionHandler(ParsingException.class)
-    public ResponseEntity<? extends BasicResponse> ParsingException(ParsingException e){
+    public ResponseEntity<? extends BasicResponse> ParsingException(ParsingException e) {
         e.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<? extends BasicResponse> UserNotFoundException(MemberException e){
+    public ResponseEntity<? extends BasicResponse> UserNotFoundException(MemberException e) {
         e.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 
     @ExceptionHandler(MemberException.class)
-    public ResponseEntity<? extends BasicResponse> MemberException(MemberException e){
+    public ResponseEntity<? extends BasicResponse> MemberException(MemberException e) {
         e.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));

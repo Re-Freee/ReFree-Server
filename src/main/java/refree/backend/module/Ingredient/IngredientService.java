@@ -49,17 +49,17 @@ public class IngredientService {
     }
 
     @Transactional(readOnly = true)
-    public List<IngredientResponseDto> view(Long ingredientId){
+    public List<IngredientResponseDto> view(Long ingredientId) {
         Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
         if (ingredient == null)
             throw new NotFoundException("존재하지 않는 재료");
         return List.of(IngredientResponseDto.getIngredientResponseDto(ingredient));
     }
 
-    public void update(IngredientDto ingredientDto, MultipartFile file, Long ingredientId){
+    public void update(IngredientDto ingredientDto, MultipartFile file, Long ingredientId) {
         Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
         if (ingredient == null)
-            throw new  NotFoundException("존재하지 않는 재료");
+            throw new NotFoundException("존재하지 않는 재료");
 
         Picture savePicture = null;
         if (file != null) { // 저장하려는 이미지 있음
@@ -75,7 +75,8 @@ public class IngredientService {
                 .orElseThrow(() -> new NotFoundException("NOT_VALID_CATEGORY"));
         ingredient.update(localDateFromString, category, ingredientDto, savePicture);
     }
-    public List<Ingredient> findAllIngredient(int mem_id){
+
+    public List<Ingredient> findAllIngredient(int mem_id) {
         return ingredientRepository.findAllIngredient(mem_id);
     }
 

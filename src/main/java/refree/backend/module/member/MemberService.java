@@ -10,12 +10,14 @@ import refree.backend.module.Recipe.*;
 import refree.backend.module.Recipe.Dto.RecipeLikeDto;
 import refree.backend.module.RecipeLike.RecipeLike;
 import refree.backend.module.RecipeLike.RecipeLikeRepository;
+import refree.backend.module.member.Dto.MemberPwModifyDto;
+import refree.backend.module.member.Dto.MemberPwSearchDto;
+import refree.backend.module.member.Dto.MemberSignupDto;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +34,7 @@ public class MemberService {
     public SingleResponse signup(MemberSignupDto memberSignupDto, HttpServletResponse response) {
 
         // 이미 존재하는 이메일
-        if (memberRepository.existsByEmail(memberSignupDto.getEmail())){
+        if (memberRepository.existsByEmail(memberSignupDto.getEmail())) {
             throw new MemberException("이미 존재하는 계정입니다.");
         }
 
@@ -58,7 +60,7 @@ public class MemberService {
         Member member = memberRepository.findByEmail(memberPwSearchDto.getEmail())
                 .orElseThrow(() -> new MemberException("존재하지 않는 계정입니다."));
 
-        if (!memberPwSearchDto.getCertification().equals(member.getCertification())){
+        if (!memberPwSearchDto.getCertification().equals(member.getCertification())) {
             throw new MemberException("인증번호가 일치하지 않습니다.");
         }
 
@@ -71,7 +73,7 @@ public class MemberService {
         Member member = memberRepository.findByEmail(memberPwModifyDto.getEmail())
                 .orElseThrow(() -> new MemberException("존재하지 않는 계정입니다."));
 
-        if (member.getIsChange() == 0){ // Exception (이미 존재하는 것이 확인된 계정에서만 호출되는 API
+        if (member.getIsChange() == 0) { // Exception (이미 존재하는 것이 확인된 계정에서만 호출되는 API
             throw new MemberException("잘못된 접근입니다.");
         }
 

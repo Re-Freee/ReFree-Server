@@ -37,7 +37,7 @@ public class IngredientController {
     @GetMapping("/view")
     public ResponseEntity<? extends BasicResponse> view(@RequestParam("ingredientId") Long ingredientId) {
         return ResponseEntity.ok()
-                .body(new GeneralResponse<>(ingredientService.view(ingredientId),"VIEW_INGREDIENT"));
+                .body(new GeneralResponse<>(ingredientService.view(ingredientId), "VIEW_INGREDIENT"));
     }
 
     //재료 수정
@@ -64,7 +64,7 @@ public class IngredientController {
     //재료 검색
     @GetMapping("/search")
     public ResponseEntity<? extends BasicResponse> search(@ModelAttribute IngredientSearch ingredientSearch,
-                                                          @CurrentUser Member member){
+                                                          @CurrentUser Member member) {
         List<IngredientResponseDto> search = ingredientService.search(ingredientSearch, member);
         return ResponseEntity.ok().body(new GeneralResponse<>(search, "INGRED_SEARCH"));
     }

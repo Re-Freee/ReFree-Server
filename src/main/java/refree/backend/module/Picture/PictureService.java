@@ -6,10 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 import refree.backend.infra.exception.ImageException;
-import refree.backend.module.Ingredient.Dto.IngredientResponseDto;
 import refree.backend.module.Ingredient.Ingredient;
-import refree.backend.module.Ingredient.IngredientRepository;
-import refree.backend.module.member.MemberRepository;
 
 @Service
 @Transactional
@@ -18,7 +15,6 @@ public class PictureService {
 
     private final S3Service s3Service;
     private final PictureRepository pictureRepository;
-    private final MemberRepository memberRepository;
 
     public String saveImage(MultipartFile file) {
         if (file.getSize() > 2097152) // 2MB보다 큰 경우

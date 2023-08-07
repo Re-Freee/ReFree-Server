@@ -13,7 +13,7 @@ import static refree.backend.module.Picture.QPicture.picture;
 
 
 @RequiredArgsConstructor
-public class IngredientRepositoryImpl implements  IngredientRepositoryCustom{
+public class IngredientRepositoryImpl implements IngredientRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -37,7 +37,7 @@ public class IngredientRepositoryImpl implements  IngredientRepositoryCustom{
     }
 
     @Override
-    public void delete(int ingredient_id,int cnt,String memo){
+    public void delete(int ingredient_id, int cnt, String memo) {
         /*jpaQueryFactory
                 .update(ingredient)
                 .set(ingredient.quantity,cnt)

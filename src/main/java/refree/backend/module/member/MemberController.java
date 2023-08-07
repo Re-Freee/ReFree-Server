@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 import refree.backend.infra.config.CurrentUser;
 import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.GeneralResponse;
+import refree.backend.module.member.Dto.MemberPwModifyDto;
+import refree.backend.module.member.Dto.MemberPwSearchDto;
+import refree.backend.module.member.Dto.MemberSignupDto;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -21,7 +24,7 @@ public class MemberController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<? extends BasicResponse> signup(@RequestBody @Valid MemberSignupDto memberSignupDto, HttpServletResponse response)  {
+    public ResponseEntity<? extends BasicResponse> signup(@RequestBody @Valid MemberSignupDto memberSignupDto, HttpServletResponse response) {
         return ResponseEntity.ok().body(memberService.signup(memberSignupDto, response));
     }
 
@@ -31,7 +34,7 @@ public class MemberController {
     }
 
     @PostMapping("/login/search/modify")
-    public ResponseEntity<? extends BasicResponse> modify(@RequestBody @Valid MemberPwModifyDto memberPwModifyDto)  {
+    public ResponseEntity<? extends BasicResponse> modify(@RequestBody @Valid MemberPwModifyDto memberPwModifyDto) {
         return ResponseEntity.ok().body(memberService.modify(memberPwModifyDto));
     }
 

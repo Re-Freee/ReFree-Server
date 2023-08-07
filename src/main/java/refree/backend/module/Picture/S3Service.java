@@ -30,7 +30,7 @@ public class S3Service {
         objectMetadata.setContentLength(file.getSize());
         objectMetadata.setContentType(file.getContentType());
 
-        try(InputStream inputStream = file.getInputStream()) {
+        try (InputStream inputStream = file.getInputStream()) {
             amazonS3Client.putObject(new PutObjectRequest(bucket, storageFileName, inputStream, objectMetadata)
                     .withCannedAcl(CannedAccessControlList.PublicReadWrite));
         } catch (IOException e) {
@@ -46,9 +46,9 @@ public class S3Service {
 
     // 파일 확장자명 가져오는 로직
     private String getFileExtension(String fileName) {
-        try{
+        try {
             return fileName.substring(fileName.lastIndexOf("."));
-        }catch(StringIndexOutOfBoundsException e) {
+        } catch (StringIndexOutOfBoundsException e) {
             throw new ImageException("잘못된 형식의 파일");
         }
     }
