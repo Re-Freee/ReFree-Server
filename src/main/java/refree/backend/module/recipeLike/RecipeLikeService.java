@@ -25,7 +25,7 @@ public class RecipeLikeService {
         Optional<RecipeLike> recipeLikeOptional = recipeLikeRepository.findByMemberIdAndRecipeId(memberId, recipeId);
         if (recipeLikeOptional.isPresent()) {
             // 이미 좋아요 누른 상태
-            deleteRecipeLike(recipeLikeOptional.get(), memberId);
+            deleteRecipeLike(recipeLikeOptional.get());
         } else {
             // 좋아요 누르지 않은 상태
             saveRecipeLike(memberId, recipeId);
@@ -41,10 +41,7 @@ public class RecipeLikeService {
         recipeLikeRepository.save(recipeLike);
     }
 
-    private void deleteRecipeLike(RecipeLike recipeLike, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException("존재하지 않는 계정입니다."));
-        member.deleteRecipeFromLikes(recipeLike);
+    private void deleteRecipeLike(RecipeLike recipeLike) {
         recipeLikeRepository.deleteById(recipeLike.getId());
     }
 }

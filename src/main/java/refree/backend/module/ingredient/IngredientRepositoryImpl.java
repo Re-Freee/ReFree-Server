@@ -37,23 +37,21 @@ public class IngredientRepositoryImpl implements IngredientRepositoryCustom {
     }
 
     @Override
-    public void delete(int ingredient_id, int cnt, String memo) {
-        /*jpaQueryFactory
-                .update(ingredient)
-                .set(ingredient.quantity,cnt)
-                .set(ingredient.content,memo)
-                .where(ingredient.ingredient_id.eq(ingredient_id))
-                .execute();*/
-        return;
-    }
-
-    @Override
     public Ingredient findByIdFetchJoinImage(Long ingredientId) {
         return jpaQueryFactory
                 .selectFrom(ingredient)
                 .leftJoin(ingredient.picture, picture)
                 .where(ingredient.id.eq(ingredientId))
                 .fetchOne();
+    }
+
+    @Override
+    public List<Ingredient> findAllByFetchJoinImage(Long memberId) {
+        return jpaQueryFactory
+                .selectFrom(ingredient)
+                .leftJoin(ingredient.picture, picture)
+                .where(ingredient.member.id.eq(memberId))
+                .fetch();
     }
 
     private BooleanExpression getOptionsEqual(String options) {

@@ -23,14 +23,9 @@ public class RecipeLike {
     @JoinColumn(name = "recipe_id")
     private Recipe recipe;
 
-    public void setMember(Member member) {
-        this.member = member;
-        member.getLikes().add(this);
-    }
-
     public static RecipeLike createRecipeLike(Member member, Recipe recipe) {
         RecipeLike recipeLike = new RecipeLike();
-        recipeLike.setMember(member);
+        recipeLike.member = member;
         recipeLike.recipe = recipe;
         return recipeLike;
     }

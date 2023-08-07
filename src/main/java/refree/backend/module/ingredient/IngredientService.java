@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import refree.backend.infra.exception.MemberException;
 import refree.backend.infra.exception.NotFoundException;
 import refree.backend.infra.exception.ParsingException;
 import refree.backend.module.category.Category;
@@ -170,5 +171,16 @@ public class IngredientService {
         } catch (DateTimeParseException e) {
             throw new ParsingException("PARSING_ERROR");
         }
+    }
+
+    public void delete(Member member, Long ingredientId) {
+        Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
+        if (ingredient == null)
+            throw new NotFoundException("존재하지 않는 재료");
+        if (!ingredient.getMember().getId().equals(member.getId()))
+            throw new MemberException("UNAUTHORIZED_ACCESS");
+        // 연관된 이미지 삭제 + 재료 삭제
+        pictureService.deletePicture(ingredient);
+        ingredientRepository.delete(ingredient);
     }
 }

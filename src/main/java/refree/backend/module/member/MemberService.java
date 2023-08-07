@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import refree.backend.infra.exception.MemberException;
 import refree.backend.infra.response.SingleResponse;
+import refree.backend.module.ingredient.Ingredient;
+import refree.backend.module.ingredient.IngredientRepository;
+import refree.backend.module.picture.PictureService;
 import refree.backend.module.recipe.*;
 import refree.backend.module.recipe.Dto.RecipeLikeDto;
 import refree.backend.module.recipeLike.RecipeLike;
@@ -28,6 +31,8 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final RecipeLikeRepository recipeLikeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final IngredientRepository ingredientRepository;
+    private final PictureService pictureService;
 
 
     // 회원가입
@@ -93,5 +98,17 @@ public class MemberService {
         List<RecipeLike> recipeLikes = recipeLikeRepository.findByMemberFetchJoinRecipe(member.getId());
         List<Recipe> recipes = recipeLikes.stream().map(RecipeLike::getRecipe).collect(Collectors.toList());
         return recipes.stream().map(RecipeLikeDto::getRecipeLikeDto).collect(Collectors.toList());
+    }
+
+    public void delete(Member member) {
+        // member와 연관된 모든 ingredient 조회 + fetch join image
+        List<Ingredient> ingredients = ingredientRepository.findAllByFetchJoinImage(member.getId());
+        ingredients.forEach(pictureService::deletePicture);
+        ingredientRepository.deleteAll(ingredients);
+        // member와 연관된 모든 recipe_like 조회
+        List<RecipeLike> recipeLikes = recipeLikeRepository.findByMemberId(member.getId());
+        recipeLikeRepository.deleteAll(recipeLikes);
+        // member 삭제
+        memberRepository.deleteById(member.getId());
     }
 }

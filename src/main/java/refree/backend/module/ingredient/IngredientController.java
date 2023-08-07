@@ -68,4 +68,11 @@ public class IngredientController {
         List<IngredientResponseDto> search = ingredientService.search(ingredientSearch, member);
         return ResponseEntity.ok().body(new GeneralResponse<>(search, "INGRED_SEARCH"));
     }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<? extends BasicResponse> delete(@RequestParam("ingredientId") Long ingredientId,
+                                                          @CurrentUser Member member) {
+        ingredientService.delete(member, ingredientId);
+        return ResponseEntity.ok().body(new SingleResponse("SUCCESS"));
+    }
 }

@@ -39,6 +39,16 @@ public class PictureService {
         }
     }
 
+    public void deletePicture(Ingredient ingredient) {
+        Picture picture = ingredient.getPicture();
+        // 기존 이미지있다면 삭제
+        if (picture != null) {
+            ingredient.deletePicture(); // 연관관계 삭제
+            pictureRepository.delete(picture);
+            s3Service.deleteFile(picture.getStoragePictureName());
+        }
+    }
+
     @Transactional(readOnly = true)
     public Picture getPicture(String storageName) {
         return pictureRepository.findByStoragePictureName(storageName)
