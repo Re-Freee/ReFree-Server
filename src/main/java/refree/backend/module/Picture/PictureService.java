@@ -1,55 +1,47 @@
 package refree.backend.module.Picture;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.Optional;
+import refree.backend.infra.exception.ImageException;
+import refree.backend.module.Ingredient.Ingredient;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class PictureService {
-    private final AmazonS3Client amazonS3Client;
+
+    private final S3Service s3Service;
     private final PictureRepository pictureRepository;
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    public String saveImage(MultipartFile file) {
+        if (file.getSize() > 2097152) // 2MB보다 큰 경우
+            throw new MaxUploadSizeExceededException(file.getSize());
 
-    @Autowired
-    public PictureService(PictureRepository pictureRepository,AmazonS3Client amazonS3Client){
-        this.pictureRepository=pictureRepository;
-        this.amazonS3Client=amazonS3Client;
+        String storageImageName = s3Service.uploadImg(file);
+        String imgUrl = s3Service.getFileUrl(storageImageName);
+        pictureRepository.save(Picture.createPicture(imgUrl, file.getOriginalFilename(), storageImageName));
+        return storageImageName;
     }
 
-    public Picture view(int id){
-        Optional<Picture> ingredient2= pictureRepository.findById(id);
-        Picture ingredient1=ingredient2.get();
-        return ingredient1;
+    public void updateImageCheck(MultipartFile file, Ingredient ingredient) {
+        Picture picture = ingredient.getPicture();
+        if (file != null && file.getSize() > 2097152) // 2MB보다 큰 경우
+            throw new MaxUploadSizeExceededException(file.getSize());
+
+        // 기존 이미지있다면 삭제
+        if (picture != null) {
+            ingredient.deletePicture(); // 연관관계 삭제
+            pictureRepository.delete(picture);
+            s3Service.deleteFile(picture.getStoragePictureName());
+        }
     }
 
-    public String uploadImg(MultipartFile file) throws IOException {
-        Picture picture=new Picture();
-
-        String fileName=file.getOriginalFilename();
-        String fileUrl= "https://" + bucket + "/test" +fileName;
-        picture.setPicture_url(fileUrl);
-        picture.setOriginal_picture_name(file.getOriginalFilename());
-        picture.setStorage_picture_name(bucket);
-        pictureRepository.save(picture);
-
-        ObjectMetadata metadata= new ObjectMetadata();
-        metadata.setContentType(file.getContentType());
-        metadata.setContentLength(file.getSize());
-        amazonS3Client.putObject(bucket,fileName,file.getInputStream(),metadata);
-
-        return fileUrl;
+    @Transactional(readOnly = true)
+    public Picture getPicture(String storageName) {
+        return pictureRepository.findByStoragePictureName(storageName)
+                .orElseThrow(() -> new ImageException("존재하지 않는 이미지"));
     }
-
 }

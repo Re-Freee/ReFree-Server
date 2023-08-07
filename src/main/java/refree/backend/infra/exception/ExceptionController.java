@@ -9,6 +9,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.ErrorResponse;
 
@@ -18,22 +19,29 @@ import java.util.Objects;
 @RestControllerAdvice // 모든 Controller 전역에서 발생할 수 있는 예외를 잡아 처리해주는 어노테이션 - filter에서 발생하는 에러 제외
 public class ExceptionController {
 
+    @ExceptionHandler(ImageException.class)
+    public ResponseEntity<? extends BasicResponse> ImageException(ImageException e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
     @ExceptionHandler(ParsingException.class)
-    public ResponseEntity<? extends BasicResponse> ParsingException(ParsingException e){
+    public ResponseEntity<? extends BasicResponse> ParsingException(ParsingException e) {
         e.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<? extends BasicResponse> UserNotFoundException(MemberException e){
+    public ResponseEntity<? extends BasicResponse> UserNotFoundException(MemberException e) {
         e.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 
     @ExceptionHandler(MemberException.class)
-    public ResponseEntity<? extends BasicResponse> MemberException(MemberException e){
+    public ResponseEntity<? extends BasicResponse> MemberException(MemberException e) {
         e.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
@@ -119,5 +127,13 @@ public class ExceptionController {
             HttpMessageNotReadableException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "HTTP_REQUEST_ERROR"));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<? extends BasicResponse> maxSizeExHandle(MaxUploadSizeExceededException e) {
+        e.printStackTrace();
+
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(new ErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE.value(), "이미지 용량이 큽니다."));
     }
 }

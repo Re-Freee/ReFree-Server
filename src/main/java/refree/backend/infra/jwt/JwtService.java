@@ -6,13 +6,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import refree.backend.infra.exception.MemberException;
 import refree.backend.module.member.Member;
-import refree.backend.module.member.MemberLoginDto;
+import refree.backend.module.member.Dto.MemberLoginDto;
 import refree.backend.module.member.MemberRepository;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.swing.text.html.Option;
 import java.util.Date;
 import java.util.Optional;
 

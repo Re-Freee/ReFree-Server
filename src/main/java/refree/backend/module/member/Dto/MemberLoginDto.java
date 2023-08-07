@@ -1,4 +1,4 @@
-package refree.backend.module.member;
+package refree.backend.module.member.Dto;
 
 import lombok.Data;
 

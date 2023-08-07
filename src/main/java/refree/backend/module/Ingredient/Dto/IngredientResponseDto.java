@@ -16,7 +16,7 @@ public class IngredientResponseDto {
     private int quantity;
     private String content;
     private int options;
-    private String image; //TODO: 이미지 url
+    private String image;
 
     public static IngredientResponseDto getIngredientResponseDto(Ingredient ingredient) {
         return IngredientResponseDto.builder()
@@ -26,7 +26,7 @@ public class IngredientResponseDto {
                 .quantity(ingredient.getQuantity())
                 .content(ingredient.getContent())
                 .options(ingredient.getOptions())
-                //TODO: 이미지 url
+                .image(ingredient.getPicture() != null ? ingredient.getPicture().getPictureUrl() : null)
                 .build();
     }
 }

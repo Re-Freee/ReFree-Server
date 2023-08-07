@@ -3,6 +3,7 @@ package refree.backend.module.Ingredient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import refree.backend.infra.exception.NotFoundException;
 import refree.backend.infra.exception.ParsingException;
 import refree.backend.module.Category.Category;
@@ -10,6 +11,8 @@ import refree.backend.module.Category.CategoryRepository;
 import refree.backend.module.Ingredient.Dto.IngredientDto;
 import refree.backend.module.Ingredient.Dto.IngredientResponseDto;
 import refree.backend.module.Ingredient.Dto.IngredientSearch;
+import refree.backend.module.Picture.Picture;
+import refree.backend.module.Picture.PictureService;
 import refree.backend.module.member.Member;
 import refree.backend.module.member.MemberRepository;
 
@@ -27,33 +30,53 @@ public class IngredientService {
     private final IngredientRepository ingredientRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
+    private final PictureService pictureService;
 
-    public void create(IngredientDto ingredientDto, Long memberId) {
+    public void create(IngredientDto ingredientDto, MultipartFile file, Long memberId) {
+        Picture picture = null;
+        if (file != null) {
+            String storageImageName = pictureService.saveImage(file);
+            picture = pictureService.getPicture(storageImageName);
+        }
+
         LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 계정입니다."));
         Category category = categoryRepository.findByName(ingredientDto.getCategory())
                 .orElseThrow(() -> new NotFoundException("NOT_VALID_CATEGORY"));
-        Ingredient ingredient = Ingredient.createIngredient(member, category, localDateFromString, ingredientDto);
+        Ingredient ingredient = Ingredient.createIngredient(member, category, localDateFromString, ingredientDto, picture);
         ingredientRepository.save(ingredient);
     }
 
     @Transactional(readOnly = true)
-    public List<IngredientResponseDto> view(Long ingredientId){
-        Ingredient ingredient = ingredientRepository.findById(ingredientId)
-                .orElseThrow(() -> new NotFoundException("존재하지 않는 재료"));
+    public List<IngredientResponseDto> view(Long ingredientId) {
+        Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
+        if (ingredient == null)
+            throw new NotFoundException("존재하지 않는 재료");
         return List.of(IngredientResponseDto.getIngredientResponseDto(ingredient));
     }
 
-    public void update(IngredientDto ingredientDto, Long ingredientId){
-        Ingredient ingredient = ingredientRepository.findById(ingredientId)
-                .orElseThrow(() -> new NotFoundException("존재하지 않는 재료"));
+    public void update(IngredientDto ingredientDto, MultipartFile file, Long ingredientId) {
+        Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
+        if (ingredient == null)
+            throw new NotFoundException("존재하지 않는 재료");
+
+        Picture savePicture = null;
+        if (file != null) { // 저장하려는 이미지 있음
+            pictureService.updateImageCheck(file, ingredient);
+            String storageImageName = pictureService.saveImage(file);
+            savePicture = pictureService.getPicture(storageImageName);
+        } else { // 저장하려는 이미지 : null
+            pictureService.updateImageCheck(null, ingredient);
+        }
+
         LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Category category = categoryRepository.findByName(ingredientDto.getCategory())
                 .orElseThrow(() -> new NotFoundException("NOT_VALID_CATEGORY"));
-        ingredient.update(localDateFromString, category, ingredientDto);
+        ingredient.update(localDateFromString, category, ingredientDto, savePicture);
     }
-    public List<Ingredient> findAllIngredient(int mem_id){
+
+    public List<Ingredient> findAllIngredient(int mem_id) {
         return ingredientRepository.findAllIngredient(mem_id);
     }
 

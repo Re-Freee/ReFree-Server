@@ -4,6 +4,7 @@ package refree.backend.module.Ingredient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import refree.backend.infra.config.CurrentUser;
 import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.GeneralResponse;
@@ -24,10 +25,11 @@ public class IngredientController {
     private final IngredientService ingredientService;
 
     //재료 저장
-    @PostMapping("/create") //TODO: Multipart
-    public ResponseEntity<? extends BasicResponse> create(@RequestBody @Valid IngredientDto ingredientDto,
+    @PostMapping("/create")
+    public ResponseEntity<? extends BasicResponse> create(@ModelAttribute @Valid IngredientDto ingredientDto,
+                                                          @RequestPart(value = "image", required = false) MultipartFile file,
                                                           @CurrentUser Member member) {
-        ingredientService.create(ingredientDto, member.getId());
+        ingredientService.create(ingredientDto, file, member.getId());
         return ResponseEntity.ok().body(new SingleResponse("SUCCESS"));
     }
 
@@ -35,14 +37,15 @@ public class IngredientController {
     @GetMapping("/view")
     public ResponseEntity<? extends BasicResponse> view(@RequestParam("ingredientId") Long ingredientId) {
         return ResponseEntity.ok()
-                .body(new GeneralResponse<>(ingredientService.view(ingredientId),"VIEW_INGREDIENT"));
+                .body(new GeneralResponse<>(ingredientService.view(ingredientId), "VIEW_INGREDIENT"));
     }
 
-    //재료 수량 조절
-    @PutMapping("/edit/{ingredientId}") //TODO: Multipart
-    public ResponseEntity<? extends BasicResponse> update(@RequestBody @Valid IngredientDto ingredientDto,
+    //재료 수정
+    @PostMapping("/edit/{ingredientId}")
+    public ResponseEntity<? extends BasicResponse> update(@ModelAttribute @Valid IngredientDto ingredientDto,
+                                                          @RequestPart(value = "image", required = false) MultipartFile file,
                                                           @PathVariable("ingredientId") Long ingredientId) {
-        ingredientService.update(ingredientDto, ingredientId);
+        ingredientService.update(ingredientDto, file, ingredientId);
         return ResponseEntity.ok().body(new SingleResponse("SUCCESS"));
     }
 
@@ -61,7 +64,7 @@ public class IngredientController {
     //재료 검색
     @GetMapping("/search")
     public ResponseEntity<? extends BasicResponse> search(@ModelAttribute IngredientSearch ingredientSearch,
-                                                          @CurrentUser Member member){
+                                                          @CurrentUser Member member) {
         List<IngredientResponseDto> search = ingredientService.search(ingredientSearch, member);
         return ResponseEntity.ok().body(new GeneralResponse<>(search, "INGRED_SEARCH"));
     }

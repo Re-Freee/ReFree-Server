@@ -4,23 +4,16 @@ package refree.backend.module.Ingredient;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import refree.backend.module.Ingredient.Dto.IngredientDto;
 import refree.backend.module.Ingredient.Dto.IngredientSearch;
 
-import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.List;
 
-import static refree.backend.module.Ingredient.QIngredient.*;
+import static refree.backend.module.Ingredient.QIngredient.ingredient;
+import static refree.backend.module.Picture.QPicture.picture;
 
 
 @RequiredArgsConstructor
-public class IngredientRepositoryImpl implements  IngredientRepositoryCustom{
+public class IngredientRepositoryImpl implements IngredientRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -44,7 +37,7 @@ public class IngredientRepositoryImpl implements  IngredientRepositoryCustom{
     }
 
     @Override
-    public void delete(int ingredient_id,int cnt,String memo){
+    public void delete(int ingredient_id, int cnt, String memo) {
         /*jpaQueryFactory
                 .update(ingredient)
                 .set(ingredient.quantity,cnt)
@@ -52,6 +45,15 @@ public class IngredientRepositoryImpl implements  IngredientRepositoryCustom{
                 .where(ingredient.ingredient_id.eq(ingredient_id))
                 .execute();*/
         return;
+    }
+
+    @Override
+    public Ingredient findByIdFetchJoinImage(Long ingredientId) {
+        return jpaQueryFactory
+                .selectFrom(ingredient)
+                .leftJoin(ingredient.picture, picture)
+                .where(ingredient.id.eq(ingredientId))
+                .fetchOne();
     }
 
     private BooleanExpression getOptionsEqual(String options) {
