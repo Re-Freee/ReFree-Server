@@ -23,10 +23,4 @@ public class MemberPwSearchDto {
 
     @NotBlank(message = "인증번호를 입력해 주세요.")
     private String certification;
-
-    public Member toEntity(){
-        return Member.builder()
-                .email(email).certification(certification).build();
-    }
-
 }

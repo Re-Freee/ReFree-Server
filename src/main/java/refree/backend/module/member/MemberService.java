@@ -6,10 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import refree.backend.infra.exception.MemberException;
 import refree.backend.infra.response.SingleResponse;
-import refree.backend.module.Recipe.*;
-import refree.backend.module.Recipe.Dto.RecipeLikeDto;
-import refree.backend.module.RecipeLike.RecipeLike;
-import refree.backend.module.RecipeLike.RecipeLikeRepository;
+import refree.backend.module.recipe.*;
+import refree.backend.module.recipe.Dto.RecipeLikeDto;
+import refree.backend.module.recipeLike.RecipeLike;
+import refree.backend.module.recipeLike.RecipeLikeRepository;
 import refree.backend.module.member.Dto.MemberPwModifyDto;
 import refree.backend.module.member.Dto.MemberPwSearchDto;
 import refree.backend.module.member.Dto.MemberSignupDto;
@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class MemberService {
 
     private final MemberRepository memberRepository;
