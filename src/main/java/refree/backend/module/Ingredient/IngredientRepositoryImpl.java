@@ -10,21 +10,12 @@ import java.util.List;
 
 import static refree.backend.module.Ingredient.QIngredient.ingredient;
 import static refree.backend.module.Picture.QPicture.picture;
+import static refree.backend.module.member.QMember.member;
 
 
 @RequiredArgsConstructor
 public class IngredientRepositoryImpl implements IngredientRepositoryCustom {
-
     private final JPAQueryFactory jpaQueryFactory;
-
-    @Override
-    public List<Ingredient> findAllIngredient(int mem_id) {
-       /* return jpaQueryFactory
-                .selectFrom(ingredient)
-                .where(ingredient.member_id.eq(mem_id))
-                .fetch();*/
-        return null;
-    }
 
     @Override
     public List<Ingredient> search(IngredientSearch ingredientSearch, Long memberId) {
@@ -37,23 +28,20 @@ public class IngredientRepositoryImpl implements IngredientRepositoryCustom {
     }
 
     @Override
-    public void delete(int ingredient_id, int cnt, String memo) {
-        /*jpaQueryFactory
-                .update(ingredient)
-                .set(ingredient.quantity,cnt)
-                .set(ingredient.content,memo)
-                .where(ingredient.ingredient_id.eq(ingredient_id))
-                .execute();*/
-        return;
-    }
-
-    @Override
     public Ingredient findByIdFetchJoinImage(Long ingredientId) {
         return jpaQueryFactory
                 .selectFrom(ingredient)
                 .leftJoin(ingredient.picture, picture)
                 .where(ingredient.id.eq(ingredientId))
                 .fetchOne();
+    }
+    @Override
+    public List<Ingredient> findByIdFetchJoinMember(Long memId){
+        return jpaQueryFactory
+                .selectFrom(ingredient)
+                .leftJoin(ingredient.member, member)
+                .where(member.id.eq(memId))
+                .fetch();
     }
 
     private BooleanExpression getOptionsEqual(String options) {
