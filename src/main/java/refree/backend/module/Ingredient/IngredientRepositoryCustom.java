@@ -1,6 +1,5 @@
 package refree.backend.module.Ingredient;
 
-import refree.backend.module.Ingredient.Dto.IngredientDto;
 import refree.backend.module.Ingredient.Dto.IngredientSearch;
 
 import java.util.List;
@@ -13,4 +12,6 @@ public interface IngredientRepositoryCustom {
     void delete(int ingredient_id,int cnt,String memo);
     List<Ingredient> findAllIngredient(int mem_id);
     List<Ingredient> search(IngredientSearch ingredientSearch, Long memberId);
+
+    Ingredient findByIdFetchJoinImage(Long ingredientId);
 }

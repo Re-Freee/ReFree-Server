@@ -3,6 +3,7 @@ package refree.backend.module.Ingredient;
 import lombok.Getter;
 import refree.backend.module.Category.Category;
 import refree.backend.module.Ingredient.Dto.IngredientDto;
+import refree.backend.module.Picture.Picture;
 import refree.backend.module.member.Member;
 
 import javax.persistence.*;
@@ -31,10 +32,12 @@ public class Ingredient {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    //TODO: 이미지 테이블 OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "picture_id")
+    private Picture picture;
 
-    public static Ingredient createIngredient(Member member, Category category,
-                                              LocalDate period, IngredientDto ingredientDto) {
+    public static Ingredient createIngredient(Member member, Category category, LocalDate period,
+                                              IngredientDto ingredientDto, Picture picture) {
         Ingredient ingredient = new Ingredient();
         ingredient.name = ingredientDto.getName();
         ingredient.period = period;
@@ -43,15 +46,21 @@ public class Ingredient {
         ingredient.options = ingredientDto.getOptions();
         ingredient.member = member;
         ingredient.category = category;
+        ingredient.picture = picture;
         return ingredient;
     }
 
-    public void update(LocalDate period, Category category, IngredientDto ingredientDto) {
+    public void update(LocalDate period, Category category, IngredientDto ingredientDto, Picture picture) {
         this.name = ingredientDto.getName();
         this.period = period;
         this.quantity = ingredientDto.getQuantity();
         this.content = ingredientDto.getContent();
         this.options = ingredientDto.getOptions();
         this.category = category;
+        this.picture = picture;
+    }
+
+    public void deletePicture() {
+        this.picture = null;
     }
 }

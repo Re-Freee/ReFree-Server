@@ -1,6 +1,12 @@
 package refree.backend.module.Picture;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
-public interface PictureRepository extends JpaRepository<Picture,Integer> {
+import java.util.Optional;
+
+@Transactional(readOnly = true)
+public interface PictureRepository extends JpaRepository<Picture, Long> {
+
+    Optional<Picture> findByStoragePictureName(String storageName);
 }
