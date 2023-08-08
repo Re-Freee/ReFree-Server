@@ -87,7 +87,7 @@ public class IngredientService {
             LocalDate expire = ingredient.getPeriod(); // 재료 소비기한날짜
             LocalDate currentDate = LocalDate.now(); // 현재 날짜
 
-            Period period = Period.between(expire, currentDate);
+            Period period = Period.between(currentDate, expire);
             int daysPassed = period.getDays();
 
             if (expire.isAfter(currentDate) && daysPassed <= 3) { // 날짜 아직 지나지 않았고 3일 이하

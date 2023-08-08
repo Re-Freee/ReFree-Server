@@ -7,7 +7,7 @@ import refree.backend.module.recipe.Dto.RecipeSearch;
 
 import java.util.List;
 
-import static refree.backend.module.recipe.QRecipe.*;
+import static refree.backend.module.recipe.QRecipe.recipe;
 
 
 @RequiredArgsConstructor
@@ -29,6 +29,7 @@ public class RecipeRepositoryImpl implements RecipeRepositoryCustom {
                 .selectFrom(recipe)
                 .where(getTypeContains(recipeSearch.getType()),
                         getNameContains(recipeSearch.getTitle()))
+                .offset(recipeSearch.getOffset())
                 .limit(10)
                 .fetch();
     }

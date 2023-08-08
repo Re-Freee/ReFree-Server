@@ -8,19 +8,18 @@ import refree.backend.infra.exception.MemberException;
 import refree.backend.infra.response.SingleResponse;
 import refree.backend.module.ingredient.Ingredient;
 import refree.backend.module.ingredient.IngredientRepository;
-import refree.backend.module.picture.PictureService;
-import refree.backend.module.recipe.*;
-import refree.backend.module.recipe.Dto.RecipeLikeDto;
-import refree.backend.module.recipeLike.RecipeLike;
-import refree.backend.module.recipeLike.RecipeLikeRepository;
 import refree.backend.module.member.Dto.MemberPwModifyDto;
 import refree.backend.module.member.Dto.MemberPwSearchDto;
 import refree.backend.module.member.Dto.MemberSignupDto;
+import refree.backend.module.picture.PictureService;
+import refree.backend.module.recipe.Dto.RecipeLikeDto;
+import refree.backend.module.recipe.Recipe;
+import refree.backend.module.recipeLike.RecipeLike;
+import refree.backend.module.recipeLike.RecipeLikeRepository;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.UUID;
-
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -94,8 +93,12 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecipeLikeDto> recipeLike(Member member) {
-        List<RecipeLike> recipeLikes = recipeLikeRepository.findByMemberFetchJoinRecipe(member.getId());
+    public List<RecipeLikeDto> recipeLike(Member member, Integer offset) {
+        if (offset == null)
+            offset = 0;
+        else
+            offset = Math.max(offset, 0);
+        List<RecipeLike> recipeLikes = recipeLikeRepository.findByMemberFetchJoinRecipe(member.getId(), offset);
         List<Recipe> recipes = recipeLikes.stream().map(RecipeLike::getRecipe).collect(Collectors.toList());
         return recipes.stream().map(RecipeLikeDto::getRecipeLikeDto).collect(Collectors.toList());
     }

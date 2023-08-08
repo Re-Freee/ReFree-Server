@@ -14,11 +14,13 @@ public class RecipeLikeRepositoryImpl implements RecipeLikeRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<RecipeLike> findByMemberFetchJoinRecipe(Long memberId) {
+    public List<RecipeLike> findByMemberFetchJoinRecipe(Long memberId, int offset) {
         return jpaQueryFactory
                 .selectFrom(recipeLike)
                 .join(recipeLike.recipe, recipe).fetchJoin()
                 .where(recipeLike.member.id.eq(memberId))
+                .offset(offset)
+                .limit(10)
                 .fetch();
     }
 }

@@ -37,9 +37,10 @@ public class MemberController {
     }
 
     @GetMapping("/member/like")
-    public ResponseEntity<? extends BasicResponse> likedRecipe(@CurrentUser Member member) {
+    public ResponseEntity<? extends BasicResponse> likedRecipe(@CurrentUser Member member,
+                                                               @RequestParam(value = "offset", required = false) Integer offset) {
         return ResponseEntity.ok()
-                .body(new GeneralResponse<>(memberService.recipeLike(member), "LIKED_RECIPE_RESULT"));
+                .body(new GeneralResponse<>(memberService.recipeLike(member, offset), "LIKED_RECIPE_RESULT"));
     }
 
     @DeleteMapping("/member/delete")

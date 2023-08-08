@@ -7,4 +7,9 @@ public class RecipeSearch {
 
     private String type;
     private String title;
+    private int offset;
+
+    public void setOffset(int offset) {
+        this.offset = Math.max(offset, 0);
+    }
 }
