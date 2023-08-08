@@ -102,7 +102,7 @@ public class MemberService {
 
     public void delete(Member member) {
         // member와 연관된 모든 ingredient 조회 + fetch join image
-        List<Ingredient> ingredients = ingredientRepository.findAllByFetchJoinImage(member.getId());
+        List<Ingredient> ingredients = ingredientRepository.findAllByMemberFetchJoinImage(member.getId());
         ingredients.forEach(pictureService::deletePicture);
         ingredientRepository.deleteAll(ingredients);
         // member와 연관된 모든 recipe_like 조회

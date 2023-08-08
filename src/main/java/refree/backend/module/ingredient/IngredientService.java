@@ -10,15 +10,14 @@ import refree.backend.infra.exception.ParsingException;
 import refree.backend.module.category.Category;
 import refree.backend.module.category.CategoryRepository;
 import refree.backend.module.ingredient.Dto.IngredientDto;
-import refree.backend.module.ingredient.Dto.IngredientResponseDto;
+import refree.backend.module.ingredient.Dto.IngredientShortResponse;
+import refree.backend.module.ingredient.Dto.IngredientViewDto;
 import refree.backend.module.ingredient.Dto.IngredientSearch;
 import refree.backend.module.picture.Picture;
 import refree.backend.module.picture.PictureService;
 import refree.backend.module.member.Member;
 import refree.backend.module.member.MemberRepository;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
@@ -52,11 +51,11 @@ public class IngredientService {
     }
 
     @Transactional(readOnly = true)
-    public List<IngredientResponseDto> view(Long ingredientId) {
+    public List<IngredientViewDto> view(Long ingredientId) {
         Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
         if (ingredient == null)
             throw new NotFoundException("존재하지 않는 재료");
-        return List.of(IngredientResponseDto.getIngredientResponseDto(ingredient));
+        return List.of(IngredientViewDto.getIngredientViewDto(ingredient));
     }
 
     public void update(IngredientDto ingredientDto, MultipartFile file, Long ingredientId) {
@@ -80,47 +79,43 @@ public class IngredientService {
     }
 
 
-    public List<IngredientResponseDto> closure(Long mem_id){ //유통기한이 3일 남은 경우
-        List<Ingredient> check=ingredientRepository.findByIdFetchJoinMember(mem_id);
+    public List<IngredientShortResponse> imminent(Long memId) { //유통기한이 3일 남은 경우
+        List<Ingredient> ingredients = ingredientRepository.findAllByMemberFetchJoinImage(memId);
 
-        List<Ingredient> confirm = new ArrayList<>();
-        for(int i=0;i<check.size();i++){
-            LocalDate expire=check.get(i).getPeriod();
-            LocalDate currentDate = LocalDate.now();
+        List<IngredientShortResponse> confirm = new ArrayList<>();
+        for (Ingredient ingredient : ingredients) {
+            LocalDate expire = ingredient.getPeriod(); // 재료 소비기한날짜
+            LocalDate currentDate = LocalDate.now(); // 현재 날짜
 
             Period period = Period.between(expire, currentDate);
             int daysPassed = period.getDays();
 
-            if (expire.isAfter(currentDate) && daysPassed <= 3) { //3일 이하
-                confirm.add(check.get(i));
+            if (expire.isAfter(currentDate) && daysPassed <= 3) { // 날짜 아직 지나지 않았고 3일 이하
+                confirm.add(IngredientShortResponse.getIngredientShortResponse(ingredient));
             }
         }
-        return confirm.stream()
-                .map(IngredientResponseDto::getIngredientResponseDto)
-                .collect(Collectors.toList());
+        return confirm;
     }
 
-    public List<IngredientResponseDto> end(Long mem_id){ //유통기한이 만료된 경우
-        List<Ingredient> check=ingredientRepository.findByIdFetchJoinMember(mem_id);
+    public List<IngredientShortResponse> end(Long memId) { // 유통기한이 만료된 경우
+        List<Ingredient> ingredients = ingredientRepository.findAllByMemberFetchJoinImage(memId);
 
-        List<Ingredient> confirm=new ArrayList<>();
-        for(int i=0;i<check.size();i++){
-            LocalDate expire=check.get(i).getPeriod();
+        List<IngredientShortResponse> confirm = new ArrayList<>();
+        for (Ingredient ingredient : ingredients) {
+            LocalDate expire = ingredient.getPeriod();
             LocalDate currentDate = LocalDate.now();
 
-            if(currentDate.isAfter(expire))
-                confirm.add(check.get(i));
-
+            if (currentDate.isAfter(expire)) // 현재시간이 만료일보다 미래
+                confirm.add(IngredientShortResponse.getIngredientShortResponse(ingredient));
         }
-        return confirm.stream()
-                .map(IngredientResponseDto::getIngredientResponseDto)
-                .collect(Collectors.toList());
+        return confirm;
     }
+
     @Transactional(readOnly = true)
-    public List<IngredientResponseDto> search(IngredientSearch ingredientSearch, Member member) {
+    public List<IngredientShortResponse> search(IngredientSearch ingredientSearch, Member member) {
         List<Ingredient> ingredients = ingredientRepository.search(ingredientSearch, member.getId());
         return ingredients.stream()
-                .map(IngredientResponseDto::getIngredientResponseDto)
+                .map(IngredientShortResponse::getIngredientShortResponse)
                 .collect(Collectors.toList());
     }
 

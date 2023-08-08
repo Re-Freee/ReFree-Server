@@ -10,7 +10,7 @@ import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.GeneralResponse;
 import refree.backend.infra.response.SingleResponse;
 import refree.backend.module.ingredient.Dto.IngredientDto;
-import refree.backend.module.ingredient.Dto.IngredientResponseDto;
+import refree.backend.module.ingredient.Dto.IngredientShortResponse;
 import refree.backend.module.ingredient.Dto.IngredientSearch;
 import refree.backend.module.member.Member;
 
@@ -51,10 +51,10 @@ public class IngredientController {
 
 
     //유통기한 임박 재료
-    @GetMapping("/closure")
-    public ResponseEntity<? extends BasicResponse> closure(@CurrentUser Member member){
+    @GetMapping("/imminent")
+    public ResponseEntity<? extends BasicResponse> imminent(@CurrentUser Member member){
         return ResponseEntity.ok()
-                .body(new GeneralResponse<>(ingredientService.closure(member.getId()),"CLOSE_INGREDIENT"));
+                .body(new GeneralResponse<>(ingredientService.imminent(member.getId()),"IMMINENT_INGREDIENT"));
     }
 
     //유통기한 지난 재료
@@ -68,7 +68,7 @@ public class IngredientController {
     @GetMapping("/search")
     public ResponseEntity<? extends BasicResponse> search(@ModelAttribute IngredientSearch ingredientSearch,
                                                           @CurrentUser Member member) {
-        List<IngredientResponseDto> search = ingredientService.search(ingredientSearch, member);
+        List<IngredientShortResponse> search = ingredientService.search(ingredientSearch, member);
         return ResponseEntity.ok().body(new GeneralResponse<>(search, "INGRED_SEARCH"));
     }
 
