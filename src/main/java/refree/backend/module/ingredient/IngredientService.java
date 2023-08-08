@@ -17,7 +17,10 @@ import refree.backend.module.picture.PictureService;
 import refree.backend.module.member.Member;
 import refree.backend.module.member.MemberRepository;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -27,7 +30,6 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class IngredientService {
-
     private final IngredientRepository ingredientRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
@@ -77,84 +79,43 @@ public class IngredientService {
         ingredient.update(localDateFromString, category, ingredientDto, savePicture);
     }
 
-    public List<Ingredient> findAllIngredient(int mem_id) {
-        return ingredientRepository.findAllIngredient(mem_id);
+
+    public List<IngredientResponseDto> closure(Long mem_id){ //유통기한이 3일 남은 경우
+        List<Ingredient> check=ingredientRepository.findByIdFetchJoinMember(mem_id);
+
+        List<Ingredient> confirm = new ArrayList<>();
+        for(int i=0;i<check.size();i++){
+            LocalDate expire=check.get(i).getPeriod();
+            LocalDate currentDate = LocalDate.now();
+
+            Period period = Period.between(expire, currentDate);
+            int daysPassed = period.getDays();
+
+            if (expire.isAfter(currentDate) && daysPassed <= 3) { //3일 이하
+                confirm.add(check.get(i));
+            }
+        }
+        return confirm.stream()
+                .map(IngredientResponseDto::getIngredientResponseDto)
+                .collect(Collectors.toList());
     }
 
-    /*public List<Ingredient> closure(int mem_id){ //유통기한이 3일 남은 경우
-        List<Ingredient> check=findAllIngredient(mem_id);
-        List<Ingredient> confirm = new ArrayList<>();
-        int[] month={0,31,29,31,30,31,30,31,30,31,30,31,30};
+    public List<IngredientResponseDto> end(Long mem_id){ //유통기한이 만료된 경우
+        List<Ingredient> check=ingredientRepository.findByIdFetchJoinMember(mem_id);
+
+        List<Ingredient> confirm=new ArrayList<>();
         for(int i=0;i<check.size();i++){
-            java.sql.Date expire=check.get(i).getPeriod();
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String formatted= dateFormat.format(expire);
-            String[] format=formatted.split("-");
+            LocalDate expire=check.get(i).getPeriod();
+            LocalDate currentDate = LocalDate.now();
 
-            // 현재 시간을 milliseconds로 얻어옵니다.
-            long currentTimeMillis = System.currentTimeMillis();
-            java.sql.Date currentDate = new java.sql.Date(currentTimeMillis);
-            String formatted2=dateFormat.format(currentDate);
-            String[] format2=formatted2.split("-");
-
-            if(format[0].equals(format2[0])){//같은 년도, 같은 달
-                if (format[1].equals(format2[1])){//같은 달
-                    if(Integer.parseInt(format[2])-Integer.parseInt(format2[2])<=3 && Integer.parseInt(format[2])-Integer.parseInt(format2[2])>=0) {
-                        confirm.add(check.get(i));
-                    }
-                }
-                else {//다른 달
-                    if(Integer.parseInt(format[0])-Integer.parseInt(format2[0])==1){
-                        int checked=month[Integer.parseInt(format2[1])]-Integer.parseInt(format2[2])+1;
-                        int checking=checked+Integer.parseInt(format[2]);
-                        if (checking<=3 && checking>=0){
-                            confirm.add(check.get(i));
-                        }
-                    }
-                }
-            }
-            else if(Integer.parseInt(format[0])-Integer.parseInt(format2[0])==1){//다른 년도 12, 1월인 경우
-                if(Integer.parseInt(format[1])==1&&Integer.parseInt(format2[1])==12){
-                    int checked=month[Integer.parseInt(format2[1])]-Integer.parseInt(format2[2])+1;
-                    int checking=checked+Integer.parseInt(format[2]);
-                    if (checking<=3 && checking>=0){
-                        confirm.add(check.get(i));
-                    }
-                }
-            }
+            if(currentDate.isAfter(expire))
+                confirm.add(check.get(i));
 
         }
-        return confirm;
-    }*/
-
-    /*public List<Ingredient> end(int mem_id){
-        List<Ingredient> check=findAllIngredient(mem_id);
-        List<Ingredient> confirm =new ArrayList<>();
-        for(int i=0;i<check.size();i++){
-            java.sql.Date expire=check.get(i).getPeriod();
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String formatted= dateFormat.format(expire);
-            String[] format=formatted.split("-");
-
-            // 현재 시간을 milliseconds로 얻어옵니다.
-            long currentTimeMillis = System.currentTimeMillis();
-            java.sql.Date currentDate = new Date(currentTimeMillis);
-            String formatted2=dateFormat.format(currentDate);
-            String[] format2=formatted2.split("-");
-
-            if(Integer.parseInt(format2[0])-Integer.parseInt(format[0])>0){
-                confirm.add(check.get(i));
-            }
-            else if(format2[0].equals(format[0])&&Integer.parseInt(format2[1])-Integer.parseInt(format[1])>0){
-                confirm.add(check.get(i));
-            }
-            else if(format2[0].equals(format[0])&&format2[1].equals(format[1])&&Integer.parseInt(format2[2])-Integer.parseInt(format[2])>0){
-                confirm.add(check.get(i));
-            }
-        }
-        return confirm;
-    }*/
-
+        return confirm.stream()
+                .map(IngredientResponseDto::getIngredientResponseDto)
+                .collect(Collectors.toList());
+    }
     @Transactional(readOnly = true)
     public List<IngredientResponseDto> search(IngredientSearch ingredientSearch, Member member) {
         List<Ingredient> ingredients = ingredientRepository.search(ingredientSearch, member.getId());
