@@ -4,10 +4,12 @@ package refree.backend.module.ingredient;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import refree.backend.module.category.QCategory;
 import refree.backend.module.ingredient.Dto.IngredientSearch;
 
 import java.util.List;
 
+import static refree.backend.module.category.QCategory.*;
 import static refree.backend.module.ingredient.QIngredient.ingredient;
 import static refree.backend.module.picture.QPicture.picture;
 
@@ -32,6 +34,16 @@ public class IngredientRepositoryImpl implements IngredientRepositoryCustom {
         return jpaQueryFactory
                 .selectFrom(ingredient)
                 .leftJoin(ingredient.picture, picture).fetchJoin()
+                .where(ingredient.id.eq(ingredientId))
+                .fetchOne();
+    }
+
+    @Override
+    public Ingredient findByIdFetchJoinImageAndCategory(Long ingredientId) {
+        return jpaQueryFactory
+                .selectFrom(ingredient)
+                .leftJoin(ingredient.picture, picture).fetchJoin()
+                .join(ingredient.category, category).fetchJoin()
                 .where(ingredient.id.eq(ingredientId))
                 .fetchOne();
     }

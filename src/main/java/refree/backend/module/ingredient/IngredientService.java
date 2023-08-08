@@ -52,7 +52,7 @@ public class IngredientService {
 
     @Transactional(readOnly = true)
     public List<IngredientViewDto> view(Long ingredientId) {
-        Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
+        Ingredient ingredient = ingredientRepository.findByIdFetchJoinImageAndCategory(ingredientId);
         if (ingredient == null)
             throw new NotFoundException("존재하지 않는 재료");
         return List.of(IngredientViewDto.getIngredientViewDto(ingredient));
