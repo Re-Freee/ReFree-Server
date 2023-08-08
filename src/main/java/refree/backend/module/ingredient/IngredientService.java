@@ -35,13 +35,13 @@ public class IngredientService {
     private final PictureService pictureService;
 
     public void create(IngredientDto ingredientDto, MultipartFile file, Long memberId) {
+        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Picture picture = null;
         if (file != null) {
             String storageImageName = pictureService.saveImage(file);
             picture = pictureService.getPicture(storageImageName);
         }
 
-        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 계정입니다."));
         Category category = categoryRepository.findByName(ingredientDto.getCategory())
@@ -59,6 +59,7 @@ public class IngredientService {
     }
 
     public void update(IngredientDto ingredientDto, MultipartFile file, Long ingredientId) {
+        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
         if (ingredient == null)
             throw new NotFoundException("존재하지 않는 재료");
@@ -72,7 +73,6 @@ public class IngredientService {
             pictureService.updateImageCheck(null, ingredient);
         }
 
-        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Category category = categoryRepository.findByName(ingredientDto.getCategory())
                 .orElseThrow(() -> new NotFoundException("NOT_VALID_CATEGORY"));
         ingredient.update(localDateFromString, category, ingredientDto, savePicture);
