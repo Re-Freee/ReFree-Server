@@ -49,18 +49,21 @@ public class IngredientController {
         return ResponseEntity.ok().body(new SingleResponse("SUCCESS"));
     }
 
-    //재료 소비기한 임박
-    /*@GetMapping("/closure")
-    public ResponseEntity<? extends BasicResponse> closure(@RequestParam int mem_id){
-        return ResponseEntity.ok().body(new GeneralResponse<>(ingredientService.closure(mem_id),"CLOSE_INGREDIENT"));
-    }*/
 
-    //재료 소비기한 만료
-    /*@GetMapping("/end")
-    public ResponseEntity<? extends BasicResponse> end(@RequestParam int mem_id){
-        return ResponseEntity.ok().body(new GeneralResponse<>(ingredientService.end(mem_id),"END_INGREDIENT"));
+    //유통기한 임박 재료
+    @GetMapping("/closure")
+    public ResponseEntity<? extends BasicResponse> closure(@CurrentUser Member member){
+        return ResponseEntity.ok()
+                .body(new GeneralResponse<>(ingredientService.closure(member.getId()),"CLOSE_INGREDIENT"));
     }
-*/
+
+    //유통기한 지난 재료
+    @GetMapping("/end")
+    public ResponseEntity<? extends BasicResponse> end(@CurrentUser Member member){
+        return ResponseEntity.ok()
+                .body(new GeneralResponse<>(ingredientService.end(member.getId()),"END_INGREDIENT"));
+    }
+
     //재료 검색
     @GetMapping("/search")
     public ResponseEntity<? extends BasicResponse> search(@ModelAttribute IngredientSearch ingredientSearch,
