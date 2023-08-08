@@ -5,11 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import refree.backend.module.RecipeLike.RecipeLike;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -25,9 +22,6 @@ public class Member {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "check_password")
-    private String checkPassword;
-
     @Column(name = "password", nullable = false)
     private String password;
 
@@ -36,13 +30,6 @@ public class Member {
 
     @Column(name = "is_change", nullable = false)
     private int isChange;
-
-    @OneToMany(mappedBy = "member")
-    private Set<RecipeLike> likes = new HashSet<>();
-
-    public void deleteRecipeFromLikes(RecipeLike recipeLike) {
-        likes.remove(recipeLike);
-    }
 
     @Column(name = "certification", nullable = false)
     private String certification;

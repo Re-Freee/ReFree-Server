@@ -2,13 +2,11 @@ package refree.backend.module.member;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import refree.backend.infra.config.CurrentUser;
 import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.GeneralResponse;
+import refree.backend.infra.response.SingleResponse;
 import refree.backend.module.member.Dto.MemberPwModifyDto;
 import refree.backend.module.member.Dto.MemberPwSearchDto;
 import refree.backend.module.member.Dto.MemberSignupDto;
@@ -39,8 +37,15 @@ public class MemberController {
     }
 
     @GetMapping("/member/like")
-    public ResponseEntity<? extends BasicResponse> likedRecipe(@CurrentUser Member member) {
+    public ResponseEntity<? extends BasicResponse> likedRecipe(@CurrentUser Member member,
+                                                               @RequestParam(value = "offset", required = false) Integer offset) {
         return ResponseEntity.ok()
-                .body(new GeneralResponse<>(memberService.recipeLike(member), "LIKED_RECIPE_RESULT"));
+                .body(new GeneralResponse<>(memberService.recipeLike(member, offset), "LIKED_RECIPE_RESULT"));
+    }
+
+    @DeleteMapping("/member/delete")
+    public ResponseEntity<? extends BasicResponse> delete(@CurrentUser Member member) {
+        memberService.delete(member);
+        return ResponseEntity.ok().body(new SingleResponse("SUCCESS"));
     }
 }
