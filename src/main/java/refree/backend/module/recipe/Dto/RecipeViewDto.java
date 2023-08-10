@@ -14,7 +14,7 @@ public class RecipeViewDto {
     private String name;
     private Double calorie;
     private String ingredient;
-    private Boolean isHeart;
+    private Integer isHeart;
     private String image;
     private List<ManualDto> manual;
 
@@ -24,7 +24,7 @@ public class RecipeViewDto {
                 .name(recipe.getName())
                 .calorie(recipe.getCalorie())
                 .ingredient(recipe.getIngredient())
-                .isHeart(isHeart)
+                .isHeart(isHeart ? 1 : 0)
                 .image(recipe.getImageUrl())
                 .manual(manual)
                 .build();

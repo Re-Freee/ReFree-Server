@@ -90,7 +90,7 @@ public class IngredientService {
             Period period = Period.between(currentDate, expire);
             int daysPassed = period.getDays();
 
-            if (expire.isAfter(currentDate) && daysPassed <= 3) { // 날짜 아직 지나지 않았고 3일 이하
+            if (daysPassed >= 0 && daysPassed <= 3) { // 3일 이하
                 confirm.add(IngredientShortResponse.getIngredientShortResponse(ingredient));
             }
         }
