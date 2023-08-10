@@ -31,9 +31,10 @@ public class RecipeController {
     }
 
     @GetMapping("/view/{recipeId}")
-    public ResponseEntity<? extends BasicResponse> viewRecipe(@PathVariable Long recipeId) {
+    public ResponseEntity<? extends BasicResponse> viewRecipe(@CurrentUser Member member,
+                                                              @PathVariable Long recipeId) {
         return ResponseEntity.ok()
-                .body(new GeneralResponse<>(recipeService.recipeView(recipeId), "RECIPE_DETAIL"));
+                .body(new GeneralResponse<>(recipeService.recipeView(member.getId(), recipeId), "RECIPE_DETAIL"));
     }
 
     @GetMapping("/search")

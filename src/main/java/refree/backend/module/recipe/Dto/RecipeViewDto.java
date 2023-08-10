@@ -14,17 +14,19 @@ public class RecipeViewDto {
     private String name;
     private Double calorie;
     private String ingredient;
+    private Boolean isHeart;
     private String image;
-    private List<ManuelDto> manuel;
+    private List<ManualDto> manual;
 
-    public static RecipeViewDto getRecipeViewDto(Recipe recipe, List<ManuelDto> manuel) {
+    public static RecipeViewDto getRecipeViewDto(Recipe recipe, List<ManualDto> manual, Boolean isHeart) {
         return RecipeViewDto.builder()
                 .id(recipe.getId())
                 .name(recipe.getName())
                 .calorie(recipe.getCalorie())
                 .ingredient(recipe.getIngredient())
+                .isHeart(isHeart)
                 .image(recipe.getImageUrl())
-                .manuel(manuel)
+                .manual(manual)
                 .build();
     }
 }

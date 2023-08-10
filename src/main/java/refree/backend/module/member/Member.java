@@ -34,14 +34,9 @@ public class Member {
     @Column(name = "certification", nullable = false)
     private String certification;
 
-    public int getIsChange(){
-        return isChange;
-    }
-
     public void encodePassword(PasswordEncoder passwordEncoder){
         this.password = passwordEncoder.encode(password);
     }
-
 
     public void updatePassword(PasswordEncoder passwordEncoder, String newPassword){
         this.password = passwordEncoder.encode(newPassword);

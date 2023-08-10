@@ -11,10 +11,11 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import refree.backend.infra.exception.NotFoundException;
 import refree.backend.module.category.CategoryRepository;
-import refree.backend.module.recipe.Dto.ManuelDto;
+import refree.backend.module.recipe.Dto.ManualDto;
 import refree.backend.module.recipe.Dto.RecipeDto;
 import refree.backend.module.recipe.Dto.RecipeSearch;
 import refree.backend.module.recipe.Dto.RecipeViewDto;
+import refree.backend.module.recipeLike.RecipeLikeRepository;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class RecipeService {
 
     private final RecipeRepository recipeRepository;
     private final CategoryRepository categoryRepository;
+    private final RecipeLikeRepository recipeLikeRepository;
 
     @PostConstruct
     public void initRecipeData() throws IOException, ParseException {
@@ -78,18 +80,18 @@ public class RecipeService {
                     .calorie(Double.parseDouble((String) recipeObject.get("INFO_ENG")))
                     .imageUrl((String) recipeObject.get("ATT_FILE_NO_MAIN"))
                     .ingredient((String) recipeObject.get("RCP_PARTS_DTLS"))
-                    .manuel1((String) recipeObject.get("MANUAL01"))
-                    .manuelUrl1((String) recipeObject.get("MANUAL_IMG01"))
-                    .manuel2((String) recipeObject.get("MANUAL02"))
-                    .manuelUrl2((String) recipeObject.get("MANUAL_IMG02"))
-                    .manuel3((String) recipeObject.get("MANUAL03"))
-                    .manuelUrl3((String) recipeObject.get("MANUAL_IMG03"))
-                    .manuel4((String) recipeObject.get("MANUAL04"))
-                    .manuelUrl4((String) recipeObject.get("MANUAL_IMG04"))
-                    .manuel5((String) recipeObject.get("MANUAL05"))
-                    .manuelUrl5((String) recipeObject.get("MANUAL_IMG05"))
-                    .manuel6((String) recipeObject.get("MANUAL06"))
-                    .manuelUrl6((String) recipeObject.get("MANUAL_IMG06"))
+                    .manual1((String) recipeObject.get("MANUAL01"))
+                    .manualUrl1((String) recipeObject.get("MANUAL_IMG01"))
+                    .manual2((String) recipeObject.get("MANUAL02"))
+                    .manualUrl2((String) recipeObject.get("MANUAL_IMG02"))
+                    .manual3((String) recipeObject.get("MANUAL03"))
+                    .manualUrl3((String) recipeObject.get("MANUAL_IMG03"))
+                    .manual4((String) recipeObject.get("MANUAL04"))
+                    .manualUrl4((String) recipeObject.get("MANUAL_IMG04"))
+                    .manual5((String) recipeObject.get("MANUAL05"))
+                    .manualUrl5((String) recipeObject.get("MANUAL_IMG05"))
+                    .manual6((String) recipeObject.get("MANUAL06"))
+                    .manualUrl6((String) recipeObject.get("MANUAL_IMG06"))
                     .build();
             recipeList.add(recipe);
         }
@@ -129,7 +131,7 @@ public class RecipeService {
             }
             recipeIds.add(recipeCount.getRecipeId());
         }
-        if (recipeIds.size() != 0) {
+        if (!recipeIds.isEmpty()) {
             return recipeIds.stream() // 우선 순위대로 내려주는 방식
                     .map(recipeId -> {
                         Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(()
@@ -169,33 +171,35 @@ public class RecipeService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecipeViewDto> recipeView(Long recipeId) {
+    public List<RecipeViewDto> recipeView(Long memberId, Long recipeId) {
         // 레시피 존재하는지 확인
         Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(() -> new NotFoundException("NO_RECIPE_EXIST"));
-        return List.of(RecipeViewDto.getRecipeViewDto(recipe, createManuelDtos(recipe)));
+        // 좋아요 여부 확인
+        Boolean isHeart = recipeLikeRepository.existsByMemberIdAndRecipeId(memberId, recipeId);
+        return List.of(RecipeViewDto.getRecipeViewDto(recipe, createManuelDtos(recipe), isHeart));
     }
 
     @Transactional(readOnly = true)
-    public List<ManuelDto> createManuelDtos(Recipe recipe) {
-        List<ManuelDto> manuelDtos = new ArrayList<>();
-        if (recipe.getManuel1() != null && !recipe.getManuel1().isEmpty()) {
-            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel1(), recipe.getManuelUrl1()));
+    public List<ManualDto> createManuelDtos(Recipe recipe) {
+        List<ManualDto> manualDtos = new ArrayList<>();
+        if (recipe.getManual1() != null && !recipe.getManual1().isEmpty()) {
+            manualDtos.add(ManualDto.getManualDto(recipe.getManual1(), recipe.getManualUrl1()));
         }
-        if (recipe.getManuel2() != null && !recipe.getManuel2().isEmpty()) {
-            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel2(), recipe.getManuelUrl2()));
+        if (recipe.getManual2() != null && !recipe.getManual2().isEmpty()) {
+            manualDtos.add(ManualDto.getManualDto(recipe.getManual2(), recipe.getManualUrl2()));
         }
-        if (recipe.getManuel3() != null && !recipe.getManuel3().isEmpty()) {
-            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel3(), recipe.getManuelUrl3()));
+        if (recipe.getManual3() != null && !recipe.getManual3().isEmpty()) {
+            manualDtos.add(ManualDto.getManualDto(recipe.getManual3(), recipe.getManualUrl3()));
         }
-        if (recipe.getManuel4() != null && !recipe.getManuel4().isEmpty()) {
-            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel4(), recipe.getManuelUrl4()));
+        if (recipe.getManual4() != null && !recipe.getManual4().isEmpty()) {
+            manualDtos.add(ManualDto.getManualDto(recipe.getManual4(), recipe.getManualUrl4()));
         }
-        if (recipe.getManuel5() != null && !recipe.getManuel5().isEmpty()) {
-            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel5(), recipe.getManuelUrl5()));
+        if (recipe.getManual5() != null && !recipe.getManual5().isEmpty()) {
+            manualDtos.add(ManualDto.getManualDto(recipe.getManual5(), recipe.getManualUrl5()));
         }
-        if (recipe.getManuel6() != null && !recipe.getManuel6().isEmpty()) {
-            manuelDtos.add(ManuelDto.getManuelDto(recipe.getManuel6(), recipe.getManuelUrl6()));
+        if (recipe.getManual6() != null && !recipe.getManual6().isEmpty()) {
+            manualDtos.add(ManualDto.getManualDto(recipe.getManual6(), recipe.getManualUrl6()));
         }
-        return manuelDtos;
+        return manualDtos;
     }
 }
