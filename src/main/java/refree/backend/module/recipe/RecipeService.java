@@ -11,19 +11,14 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import refree.backend.infra.exception.NotFoundException;
 import refree.backend.module.category.CategoryRepository;
-import refree.backend.module.recipe.Dto.ManualDto;
-import refree.backend.module.recipe.Dto.RecipeDto;
-import refree.backend.module.recipe.Dto.RecipeSearch;
-import refree.backend.module.recipe.Dto.RecipeViewDto;
+import refree.backend.module.recipe.Dto.*;
 import refree.backend.module.recipeLike.RecipeLikeRepository;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -98,7 +93,7 @@ public class RecipeService {
         recipeRepository.saveAll(recipeList);
     }
 
-    public List<RecipeDto> recommend(List<String> Ingredients) {
+    public List<RecipeRecommendDto> recommend(List<String> Ingredients) {
         Ingredients.forEach(i -> {
             if (!categoryRepository.existsByName(i))
                 throw new NotFoundException("존재하지 않는 재료");
@@ -136,7 +131,7 @@ public class RecipeService {
                     .map(recipeId -> {
                         Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(()
                                 -> new BadRequestException("BAD_REQUEST"));
-                        return RecipeDto.builder()
+                        return RecipeRecommendDto.builder()
                                 .id(recipe.getId())
                                 .name(recipe.getName())
                                 .calorie(recipe.getCalorie())
@@ -146,7 +141,7 @@ public class RecipeService {
                     }).collect(Collectors.toList());
             /*List<Recipe> recipeResultList = recipeRepository.findByIn(recipeIds); // 우선 순위를 고려하지 않은 방식
             return recipeResultList.stream()
-                    .map(recipe -> RecipeDto.builder()
+                    .map(recipe -> RecipeRecommendDto.builder()
                             .id(recipe.getId())
                             .name(recipe.getName())
                             .calorie(recipe.getCalorie())
@@ -158,8 +153,11 @@ public class RecipeService {
     }
 
     @Transactional(readOnly = true)
-    public List<RecipeDto> search(RecipeSearch recipeSearch) {
+    public List<RecipeDto> search(Long memberId, RecipeSearch recipeSearch) {
         List<Recipe> recipes = recipeRepository.searchRecipe(recipeSearch);
+        // Recipe_like 테이블에서 member_id로 RecipeLike리스트 가져와서 recipe_id랑 같은지 비교
+        HashMap<Long, Long> hashMap = recipeLikeRepository.likedRecipe(memberId);
+
         return recipes.stream()
                 .map(recipe -> RecipeDto.builder()
                         .id(recipe.getId())
@@ -167,6 +165,7 @@ public class RecipeService {
                         .calorie(recipe.getCalorie())
                         .ingredient(recipe.getIngredient())
                         .image(recipe.getImageUrl())
+                        .isHeart(hashMap.containsKey(recipe.getId()) ? 1 : 0)
                         .build()).collect(Collectors.toList());
     }
 

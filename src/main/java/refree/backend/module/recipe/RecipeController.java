@@ -9,6 +9,7 @@ import refree.backend.infra.response.GeneralResponse;
 import refree.backend.infra.response.SingleResponse;
 import refree.backend.module.recipe.Dto.IngredientsDto;
 import refree.backend.module.recipe.Dto.RecipeDto;
+import refree.backend.module.recipe.Dto.RecipeRecommendDto;
 import refree.backend.module.recipe.Dto.RecipeSearch;
 import refree.backend.module.recipeLike.RecipeLikeService;
 import refree.backend.module.member.Member;
@@ -26,7 +27,7 @@ public class RecipeController {
 
     @GetMapping("/recommend")
     public ResponseEntity<? extends BasicResponse> recommend(@ModelAttribute @Valid IngredientsDto ingredientsDto) {
-        List<RecipeDto> recipeDtos = recipeService.recommend(ingredientsDto.getIngredients());
+        List<RecipeRecommendDto> recipeDtos = recipeService.recommend(ingredientsDto.getIngredients());
         return ResponseEntity.ok().body(new GeneralResponse<>(recipeDtos, "RECOMMEND_RECIPE_RESULT"));
     }
 
@@ -38,9 +39,10 @@ public class RecipeController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<? extends BasicResponse> search(@ModelAttribute RecipeSearch recipeSearch) {
+    public ResponseEntity<? extends BasicResponse> search(@CurrentUser Member member,
+                                                          @ModelAttribute RecipeSearch recipeSearch) {
         return ResponseEntity.ok()
-                .body(new GeneralResponse<>(recipeService.search(recipeSearch), "RECIPE_SEARCH_RESULT"));
+                .body(new GeneralResponse<>(recipeService.search(member.getId(), recipeSearch), "RECIPE_SEARCH_RESULT"));
     }
 
     @PostMapping("/like/{recipeId}")
