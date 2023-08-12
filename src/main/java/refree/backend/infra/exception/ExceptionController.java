@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.ErrorResponse;
+import software.amazon.awssdk.services.xray.model.Http;
 
 import java.util.Objects;
 

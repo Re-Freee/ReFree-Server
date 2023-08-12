@@ -38,7 +38,9 @@ public class MemberSignupDto{
                 .email(email).password(password)
                 .nickname(nickname)
                 .isChange(0)
+                .certification("non_value")
                 .build();
+
     }
 
 }
