@@ -7,14 +7,11 @@ import refree.backend.infra.config.CurrentUser;
 import refree.backend.infra.response.BasicResponse;
 import refree.backend.infra.response.GeneralResponse;
 import refree.backend.infra.response.SingleResponse;
-import refree.backend.module.recipe.Dto.IngredientsDto;
-import refree.backend.module.recipe.Dto.RecipeDto;
 import refree.backend.module.recipe.Dto.RecipeRecommendDto;
 import refree.backend.module.recipe.Dto.RecipeSearch;
 import refree.backend.module.recipeLike.RecipeLikeService;
 import refree.backend.module.member.Member;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -26,8 +23,8 @@ public class RecipeController {
     private final RecipeLikeService recipeLikeService;
 
     @GetMapping("/recommend")
-    public ResponseEntity<? extends BasicResponse> recommend(@ModelAttribute @Valid IngredientsDto ingredientsDto) {
-        List<RecipeRecommendDto> recipeDtos = recipeService.recommend(ingredientsDto.getIngredients());
+    public ResponseEntity<? extends BasicResponse> recommend(@CurrentUser Member member) {
+        List<RecipeRecommendDto> recipeDtos = recipeService.recommend(member.getId());
         return ResponseEntity.ok().body(new GeneralResponse<>(recipeDtos, "RECOMMEND_RECIPE_RESULT"));
     }
 

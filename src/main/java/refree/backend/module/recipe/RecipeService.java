@@ -1,16 +1,17 @@
 package refree.backend.module.recipe;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import refree.backend.infra.exception.BadRequestException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import refree.backend.infra.exception.BadRequestException;
 import refree.backend.infra.exception.NotFoundException;
-import refree.backend.module.category.CategoryRepository;
+import refree.backend.module.ingredient.Ingredient;
+import refree.backend.module.ingredient.IngredientRepository;
 import refree.backend.module.recipe.Dto.*;
 import refree.backend.module.recipeLike.RecipeLikeRepository;
 
@@ -18,6 +19,8 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,8 +30,8 @@ import java.util.stream.Collectors;
 public class RecipeService {
 
     private final RecipeRepository recipeRepository;
-    private final CategoryRepository categoryRepository;
     private final RecipeLikeRepository recipeLikeRepository;
+    private final IngredientRepository ingredientRepository;
 
     @PostConstruct
     public void initRecipeData() throws IOException, ParseException {
@@ -93,19 +96,15 @@ public class RecipeService {
         recipeRepository.saveAll(recipeList);
     }
 
-    public List<RecipeRecommendDto> recommend(List<String> Ingredients) {
-        Ingredients.forEach(i -> {
-            if (!categoryRepository.existsByName(i))
-                throw new NotFoundException("존재하지 않는 재료");
-        });
-
+    private List<RecipeRecommendDto> recommendAlgorithm(List<Ingredient> ingredients) {
         ArrayList<RecipeCount> recipeCounts = new ArrayList<>();
         for (long i = 0; i < 1115; i++) {
             recipeCounts.add(RecipeCount.createRecipeCount(i));
         }
 
-        for (String ingredient : Ingredients) {
-            recipeRepository.findByIngredientContains(ingredient).forEach(recipe ->
+        // 특정 재료(String)를 가진 recipe으로 count
+        for (Ingredient ingredient : ingredients) {
+            recipeRepository.findByIngredientContains(ingredient.getCategory().getName()).forEach(recipe ->
                     recipeCounts.get(recipe.getId().intValue()).plusCount()
             );
         }
@@ -131,32 +130,56 @@ public class RecipeService {
                     .map(recipeId -> {
                         Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(()
                                 -> new BadRequestException("BAD_REQUEST"));
-                        return RecipeRecommendDto.builder()
-                                .id(recipe.getId())
-                                .name(recipe.getName())
-                                .calorie(recipe.getCalorie())
-                                .ingredient(recipe.getIngredient())
-                                .image(recipe.getImageUrl())
-                                .build();
+                        return RecipeRecommendDto.getRecipeRecommendDto(recipe);
                     }).collect(Collectors.toList());
             /*List<Recipe> recipeResultList = recipeRepository.findByIn(recipeIds); // 우선 순위를 고려하지 않은 방식
             return recipeResultList.stream()
-                    .map(recipe -> RecipeRecommendDto.builder()
-                            .id(recipe.getId())
-                            .name(recipe.getName())
-                            .calorie(recipe.getCalorie())
-                            .ingredient(recipe.getIngredient())
-                            .image(recipe.getImageUrl())
-                            .build()).collect(Collectors.toList());*/
+                    .map(recipe -> RecipeRecommendDto.getRecipeRecommendDto(recipe)).collect(Collectors.toList());*/
         }
         return List.of();
+    }
+
+    private List<Long> recommendRandomIds() {
+        Random random = new Random();
+        List<Long> ids = new ArrayList<>();
+        while (ids.size() < 3) {
+            long randomNum = (long)random.nextInt(1114) + 1;
+            if (!ids.contains(randomNum))
+                ids.add(randomNum);
+        }
+        return ids;
+    }
+
+    public List<RecipeRecommendDto> recommend(Long memberId) {
+        List<Ingredient> ingredients = ingredientRepository.findAllByMemberFetchJoinCategory(memberId);
+        if (ingredients.isEmpty()) {
+            return recipeRepository.findByIn(recommendRandomIds()).stream()
+                    .map(RecipeRecommendDto::getRecipeRecommendDto).collect(Collectors.toList());
+        }
+        List<Ingredient> filteredIngredients = ingredients.stream()
+                .filter(ingredient -> {
+                    LocalDate expire = ingredient.getPeriod();
+                    LocalDate now = LocalDate.now();
+                    int days = Period.between(now, expire).getDays();
+                    return days >= 0 && days <= 3;
+                }).collect(Collectors.toList());
+
+        List<Ingredient> resultIngredients;
+        if (filteredIngredients.isEmpty()) {
+            // 임박 재료 없음 최대 8개
+            resultIngredients = new ArrayList<>(ingredients.subList(0, Math.min(ingredients.size(), 8)));
+        } else {
+            // 임박 재료 있음 최대 8개
+            resultIngredients = new ArrayList<>(filteredIngredients.subList(0, Math.min(filteredIngredients.size(), 8)));
+        }
+        return recommendAlgorithm(resultIngredients);
     }
 
     @Transactional(readOnly = true)
     public List<RecipeDto> search(Long memberId, RecipeSearch recipeSearch) {
         List<Recipe> recipes = recipeRepository.searchRecipe(recipeSearch);
         // Recipe_like 테이블에서 member_id로 RecipeLike리스트 가져와서 recipe_id랑 같은지 비교
-        HashMap<Long, Long> hashMap = recipeLikeRepository.likedRecipe(memberId);
+        Set<Long> set = recipeLikeRepository.likedRecipe(memberId);
 
         return recipes.stream()
                 .map(recipe -> RecipeDto.builder()
@@ -165,7 +188,7 @@ public class RecipeService {
                         .calorie(recipe.getCalorie())
                         .ingredient(recipe.getIngredient())
                         .image(recipe.getImageUrl())
-                        .isHeart(hashMap.containsKey(recipe.getId()) ? 1 : 0)
+                        .isHeart(set.contains(recipe.getId()) ? 1 : 0)
                         .build()).collect(Collectors.toList());
     }
 

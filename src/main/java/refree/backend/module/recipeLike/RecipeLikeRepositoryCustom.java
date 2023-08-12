@@ -1,11 +1,11 @@
 package refree.backend.module.recipeLike;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public interface RecipeLikeRepositoryCustom {
 
     List<RecipeLike> findByMemberFetchJoinRecipe(Long memberId, int offset);
 
-    HashMap<Long, Long> likedRecipe(Long memberId);
+    Set<Long> likedRecipe(Long memberId);
 }
