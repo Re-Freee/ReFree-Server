@@ -143,7 +143,7 @@ public class RecipeService {
         Random random = new Random();
         List<Long> ids = new ArrayList<>();
         while (ids.size() < 3) {
-            long randomNum = (long)random.nextInt(1114) + 1;
+            long randomNum = (long) random.nextInt(1114) + 1;
             if (!ids.contains(randomNum))
                 ids.add(randomNum);
         }
@@ -180,16 +180,8 @@ public class RecipeService {
         List<Recipe> recipes = recipeRepository.searchRecipe(recipeSearch);
         // Recipe_like 테이블에서 member_id로 RecipeLike리스트 가져와서 recipe_id랑 같은지 비교
         Set<Long> set = recipeLikeRepository.likedRecipe(memberId);
-
         return recipes.stream()
-                .map(recipe -> RecipeDto.builder()
-                        .id(recipe.getId())
-                        .name(recipe.getName())
-                        .calorie(recipe.getCalorie())
-                        .ingredient(recipe.getIngredient())
-                        .image(recipe.getImageUrl())
-                        .isHeart(set.contains(recipe.getId()) ? 1 : 0)
-                        .build()).collect(Collectors.toList());
+                .map(recipe -> RecipeDto.getRecipeDto(recipe, set)).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
