@@ -22,10 +22,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         String exceptionMsg = (String) request.getAttribute(JwtProperties.EXCEPTION);
         response.setContentType("application/json;charset=UTF-8");
         if (exceptionMsg.equals("JWT_NOT_VALID") || exceptionMsg.equals("JWT_ACCESS_NOT_VALID")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write(objectMapper.writeValueAsString(new ErrorResponse(401, exceptionMsg)));
         } else {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write(objectMapper.writeValueAsString(new ErrorResponse(401, exceptionMsg)));
         }
     }

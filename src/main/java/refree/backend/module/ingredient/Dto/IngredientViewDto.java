@@ -16,6 +16,7 @@ public class IngredientViewDto {
     private int quantity;
     private String content;
     private int options;
+    private String category;
     private String image;
 
     public static IngredientViewDto getIngredientViewDto(Ingredient ingredient) {
@@ -26,6 +27,7 @@ public class IngredientViewDto {
                 .quantity(ingredient.getQuantity())
                 .content(ingredient.getContent())
                 .options(ingredient.getOptions())
+                .category(ingredient.getCategory().getName())
                 .image(ingredient.getPicture() != null ? ingredient.getPicture().getPictureUrl() : null)
                 .build();
     }

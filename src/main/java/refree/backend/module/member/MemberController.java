@@ -48,4 +48,10 @@ public class MemberController {
         memberService.delete(member);
         return ResponseEntity.ok().body(new SingleResponse("SUCCESS"));
     }
+
+    // 닉네임 조회
+    @GetMapping("/member/nickname")
+    public ResponseEntity<? extends BasicResponse> nickname(@CurrentUser Member member) {
+        return ResponseEntity.ok().body(new SingleResponse(member.getNickname()));
+    }
 }

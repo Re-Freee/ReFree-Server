@@ -35,13 +35,13 @@ public class IngredientService {
     private final PictureService pictureService;
 
     public void create(IngredientDto ingredientDto, MultipartFile file, Long memberId) {
+        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Picture picture = null;
         if (file != null) {
             String storageImageName = pictureService.saveImage(file);
             picture = pictureService.getPicture(storageImageName);
         }
 
-        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NotFoundException("존재하지 않는 계정입니다."));
         Category category = categoryRepository.findByName(ingredientDto.getCategory())
@@ -52,13 +52,14 @@ public class IngredientService {
 
     @Transactional(readOnly = true)
     public List<IngredientViewDto> view(Long ingredientId) {
-        Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
+        Ingredient ingredient = ingredientRepository.findByIdFetchJoinImageAndCategory(ingredientId);
         if (ingredient == null)
             throw new NotFoundException("존재하지 않는 재료");
         return List.of(IngredientViewDto.getIngredientViewDto(ingredient));
     }
 
     public void update(IngredientDto ingredientDto, MultipartFile file, Long ingredientId) {
+        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Ingredient ingredient = ingredientRepository.findByIdFetchJoinImage(ingredientId);
         if (ingredient == null)
             throw new NotFoundException("존재하지 않는 재료");
@@ -72,7 +73,6 @@ public class IngredientService {
             pictureService.updateImageCheck(null, ingredient);
         }
 
-        LocalDate localDateFromString = getLocalDateFromString(ingredientDto.getPeriod());
         Category category = categoryRepository.findByName(ingredientDto.getCategory())
                 .orElseThrow(() -> new NotFoundException("NOT_VALID_CATEGORY"));
         ingredient.update(localDateFromString, category, ingredientDto, savePicture);
@@ -90,7 +90,7 @@ public class IngredientService {
             Period period = Period.between(currentDate, expire);
             int daysPassed = period.getDays();
 
-            if (expire.isAfter(currentDate) && daysPassed <= 3) { // 날짜 아직 지나지 않았고 3일 이하
+            if (daysPassed >= 0 && daysPassed <= 3) { // 3일 이하
                 confirm.add(IngredientShortResponse.getIngredientShortResponse(ingredient));
             }
         }

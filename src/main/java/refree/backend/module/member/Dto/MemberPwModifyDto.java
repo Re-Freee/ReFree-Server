@@ -16,8 +16,8 @@ public class MemberPwModifyDto {
 
     @NotBlank(message = "새 비밀번호를 입력해 주세요.")
     @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
-    private String newPassword;
+    private String password;
 
     @NotBlank(message = "새 비밀번호를 입력해 주세요.")
-    private String checkNewPassword;
+    private String checkPassword;
 }

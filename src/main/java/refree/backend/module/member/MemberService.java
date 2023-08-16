@@ -81,12 +81,12 @@ public class MemberService {
             throw new MemberException("잘못된 접근입니다.");
         }
 
-        if (!memberPwModifyDto.getNewPassword().equals(memberPwModifyDto.getCheckNewPassword())) {
+        if (!memberPwModifyDto.getPassword().equals(memberPwModifyDto.getCheckPassword())) {
             throw new MemberException("비밀번호가 일치하지 않습니다.");
         }
 
         // 비밀번호 변경 + 계정찾기 flag 0으로 설정
-        member.updatePassword(passwordEncoder, memberPwModifyDto.getNewPassword());
+        member.updatePassword(passwordEncoder, memberPwModifyDto.getPassword());
         member.updateFlag(0);
 
         return new SingleResponse(200, "PASSWORD_CHANGE");

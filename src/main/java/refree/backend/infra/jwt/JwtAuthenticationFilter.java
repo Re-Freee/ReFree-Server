@@ -9,8 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import refree.backend.infra.principal.PrincipalDetails;
 import refree.backend.infra.response.SingleResponse;
-import refree.backend.module.member.Member;
 import refree.backend.module.member.Dto.MemberLoginDto;
+import refree.backend.module.member.Member;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -73,7 +73,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private void setBodyResponse(HttpServletResponse response, int code, String message)
             throws IOException {
-        response.setStatus(code);
+        response.setStatus(200);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(new SingleResponse(code, message)));
     }

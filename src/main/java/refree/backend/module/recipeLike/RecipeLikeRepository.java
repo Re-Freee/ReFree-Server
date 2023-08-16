@@ -12,4 +12,6 @@ public interface RecipeLikeRepository extends JpaRepository<RecipeLike, Long>, R
     Optional<RecipeLike> findByMemberIdAndRecipeId(Long memberId, Long recipeId);
 
     List<RecipeLike> findByMemberId(Long memberId);
+
+    Boolean existsByMemberIdAndRecipeId(Long memberId, Long recipeId);
 }

@@ -28,22 +28,22 @@ public class Recipe {
     private String imageUrl;
     @Column(length = 1000, nullable = false)
     private String ingredient;
-    private String manuel1;
-    @Column(name = "manuel_url1")
-    private String manuelUrl1;
-    private String manuel2;
-    @Column(name = "manuel_url2")
-    private String manuelUrl2;
-    private String manuel3;
-    @Column(name = "manuel_url3")
-    private String manuelUrl3;
-    private String manuel4;
-    @Column(name = "manuel_url4")
-    private String manuelUrl4;
-    private String manuel5;
-    @Column(name = "manuel_url5")
-    private String manuelUrl5;
-    private String manuel6;
-    @Column(name = "manuel_url6")
-    private String manuelUrl6;
+    private String manual1;
+    @Column(name = "manual_url1")
+    private String manualUrl1;
+    private String manual2;
+    @Column(name = "manual_url2")
+    private String manualUrl2;
+    private String manual3;
+    @Column(name = "manual_url3")
+    private String manualUrl3;
+    private String manual4;
+    @Column(name = "manual_url4")
+    private String manualUrl4;
+    private String manual5;
+    @Column(name = "manual_url5")
+    private String manualUrl5;
+    private String manual6;
+    @Column(name = "manual_url6")
+    private String manualUrl6;
 }

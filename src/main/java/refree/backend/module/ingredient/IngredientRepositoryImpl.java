@@ -8,6 +8,7 @@ import refree.backend.module.ingredient.Dto.IngredientSearch;
 
 import java.util.List;
 
+import static refree.backend.module.category.QCategory.category;
 import static refree.backend.module.ingredient.QIngredient.ingredient;
 import static refree.backend.module.picture.QPicture.picture;
 
@@ -37,10 +38,29 @@ public class IngredientRepositoryImpl implements IngredientRepositoryCustom {
     }
 
     @Override
+    public Ingredient findByIdFetchJoinImageAndCategory(Long ingredientId) {
+        return jpaQueryFactory
+                .selectFrom(ingredient)
+                .leftJoin(ingredient.picture, picture).fetchJoin()
+                .join(ingredient.category, category).fetchJoin()
+                .where(ingredient.id.eq(ingredientId))
+                .fetchOne();
+    }
+
+    @Override
     public List<Ingredient> findAllByMemberFetchJoinImage(Long memberId) {
         return jpaQueryFactory
                 .selectFrom(ingredient)
                 .leftJoin(ingredient.picture, picture).fetchJoin()
+                .where(ingredient.member.id.eq(memberId))
+                .fetch();
+    }
+
+    @Override
+    public List<Ingredient> findAllByMemberFetchJoinCategory(Long memberId) {
+        return jpaQueryFactory
+                .selectFrom(ingredient)
+                .join(ingredient.category, category).fetchJoin()
                 .where(ingredient.member.id.eq(memberId))
                 .fetch();
     }
