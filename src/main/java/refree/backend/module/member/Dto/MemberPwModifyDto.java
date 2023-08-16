@@ -8,6 +8,8 @@ import javax.validation.constraints.Size;
 
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class MemberPwModifyDto {
     @NotBlank(message = "이메일을 입력해 주세요.")
     @Size(max = 40, message = "이메일은 40자 내로 입력해 주세요.")

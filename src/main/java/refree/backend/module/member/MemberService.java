@@ -89,7 +89,7 @@ public class MemberService {
         member.updatePassword(passwordEncoder, memberPwModifyDto.getPassword());
         member.updateFlag(0);
 
-        return new SingleResponse(200, "PASSWORD_CHANGE");
+        return new SingleResponse(200, "CHANGE_PASSWORD");
     }
 
     @Transactional(readOnly = true)
