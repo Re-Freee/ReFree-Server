@@ -37,7 +37,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         Optional<Member> byEmail = jwtService.getOptionalMemberByEmail(memberLoginDto.getEmail());
         String result = jwtService.verifyNewMemberOrNot(byEmail, memberLoginDto);
-        if (result.equals("존재하지 않는 회원") || result.equals("비밀번호가 올바르지 않습니다")) {
+        if (result.equals("존재하지 않는 회원입니다.") || result.equals("비밀번호가 올바르지 않습니다.")) {
             try {
                 setBodyResponse(response, 400, result);
             } catch (IOException e) {
