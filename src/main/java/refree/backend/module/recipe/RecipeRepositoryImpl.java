@@ -28,7 +28,7 @@ public class RecipeRepositoryImpl implements RecipeRepositoryCustom {
         return jpaQueryFactory
                 .selectFrom(recipe)
                 .where(getTypeContains(recipeSearch.getType()),
-                        getNameContains(recipeSearch.getTitle()))
+                        getTitleIngredientContains(recipeSearch.getTitle()))
                 .offset(recipeSearch.getOffset())
                 .limit(10)
                 .fetch();
@@ -38,7 +38,19 @@ public class RecipeRepositoryImpl implements RecipeRepositoryCustom {
         return type != null ? recipe.type.contains(type) : null;
     }
 
-    private BooleanExpression getNameContains(String title) {
+    private BooleanExpression getTitleIngredientContains(String titleOrIngredient) {
+        if (titleOrIngredient != null) {
+            return getTitleContains(titleOrIngredient).or(getIngredientContains(titleOrIngredient));
+        } else {
+            return null;
+        }
+    }
+
+    private BooleanExpression getTitleContains(String title) {
         return title != null ? recipe.name.contains(title) : null;
+    }
+
+    private BooleanExpression getIngredientContains(String ingredient) {
+        return ingredient != null ? recipe.ingredient.contains(ingredient) : null;
     }
 }
