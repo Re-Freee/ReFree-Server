@@ -9,9 +9,11 @@ import refree.backend.infra.response.GeneralResponse;
 import refree.backend.infra.response.SingleResponse;
 import refree.backend.module.recipe.Dto.RecipeRecommendDto;
 import refree.backend.module.recipe.Dto.RecipeSearch;
+import refree.backend.module.recipe.Dto.RecommendRequest;
 import refree.backend.module.recipeLike.RecipeLikeService;
 import refree.backend.module.member.Member;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -22,9 +24,10 @@ public class RecipeController {
     private final RecipeService recipeService;
     private final RecipeLikeService recipeLikeService;
 
-    @GetMapping("/recommend")
-    public ResponseEntity<? extends BasicResponse> recommend(@CurrentUser Member member) {
-        List<RecipeRecommendDto> recipeDtos = recipeService.recommend(member.getId());
+    @PostMapping("/recommend")
+    public ResponseEntity<? extends BasicResponse> recommend(@CurrentUser Member member,
+                                                             @RequestBody @Valid RecommendRequest recommendRequest) {
+        List<RecipeRecommendDto> recipeDtos = recipeService.recommend(member.getId(), recommendRequest);
         return ResponseEntity.ok().body(new GeneralResponse<>(recipeDtos, "RECOMMEND_RECIPE_RESULT"));
     }
 

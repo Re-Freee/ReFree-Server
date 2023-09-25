@@ -1,6 +1,7 @@
 package refree.backend.module.recipe;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -8,11 +9,11 @@ import org.json.simple.parser.ParseException;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import refree.backend.infra.exception.BadRequestException;
 import refree.backend.infra.exception.NotFoundException;
 import refree.backend.module.ingredient.Ingredient;
 import refree.backend.module.ingredient.IngredientRepository;
 import refree.backend.module.recipe.Dto.*;
+import refree.backend.module.recipe.RecommendStrategy.RecipeRecommendationStrategy;
 import refree.backend.module.recipeLike.RecipeLikeRepository;
 
 import javax.annotation.PostConstruct;
@@ -21,9 +22,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -32,6 +36,9 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeLikeRepository recipeLikeRepository;
     private final IngredientRepository ingredientRepository;
+    private final RecipeRecommendationStrategy normalRecommendationStrategy;
+    private final RecipeRecommendationStrategy randomRecommendationStrategy;
+    private static final int MAX_RECIPE_SIZE = 8;
 
     @PostConstruct
     public void initRecipeData() throws IOException, ParseException {
@@ -96,83 +103,53 @@ public class RecipeService {
         recipeRepository.saveAll(recipeList);
     }
 
-    private List<RecipeRecommendDto> recommendAlgorithm(List<Ingredient> ingredients) {
-        ArrayList<RecipeCount> recipeCounts = new ArrayList<>();
-        for (long i = 0; i < 1115; i++) {
-            recipeCounts.add(RecipeCount.createRecipeCount(i));
-        }
-
-        // 특정 재료(String)를 가진 recipe으로 count
-        for (Ingredient ingredient : ingredients) {
-            recipeRepository.findByIngredientContains(ingredient.getCategory().getName()).forEach(recipe ->
-                    recipeCounts.get(recipe.getId().intValue()).plusCount()
-            );
-        }
-
-        // count를 기준으로 내림차순 정렬
-        recipeCounts.sort(new Comparator<RecipeCount>() {
-            @Override
-            public int compare(RecipeCount o1, RecipeCount o2) {
-                return Integer.compare(o2.getCount(), o1.getCount());
-            }
-        });
-
-        List<Long> recipeIds = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            RecipeCount recipeCount = recipeCounts.get(i);
-            if (recipeCount.getCount() == 0) {
-                break;
-            }
-            recipeIds.add(recipeCount.getRecipeId());
-        }
-        if (!recipeIds.isEmpty()) {
-            return recipeIds.stream() // 우선 순위대로 내려주는 방식
-                    .map(recipeId -> {
-                        Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(()
-                                -> new BadRequestException("BAD_REQUEST"));
-                        return RecipeRecommendDto.getRecipeRecommendDto(recipe);
-                    }).collect(Collectors.toList());
-            /*List<Recipe> recipeResultList = recipeRepository.findByIn(recipeIds); // 우선 순위를 고려하지 않은 방식
-            return recipeResultList.stream()
-                    .map(recipe -> RecipeRecommendDto.getRecipeRecommendDto(recipe)).collect(Collectors.toList());*/
-        }
-        return List.of();
-    }
-
-    private List<Long> recommendRandomIds() {
-        Random random = new Random();
-        List<Long> ids = new ArrayList<>();
-        while (ids.size() < 3) {
-            long randomNum = (long) random.nextInt(1114) + 1;
-            if (!ids.contains(randomNum))
-                ids.add(randomNum);
-        }
-        return ids;
-    }
-
-    public List<RecipeRecommendDto> recommend(Long memberId) {
+    public List<RecipeRecommendDto> recommend(Long memberId, RecommendRequest recommendRequest) {
         List<Ingredient> ingredients = ingredientRepository.findAllByMemberFetchJoinCategory(memberId);
+        // 저장한 재료가 하나도 없다면 랜덤 추천
         if (ingredients.isEmpty()) {
-            return recipeRepository.findByIn(recommendRandomIds()).stream()
-                    .map(RecipeRecommendDto::getRecipeRecommendDto).collect(Collectors.toList());
+            return randomRecommendationStrategy.recommend(ingredients);
         }
-        List<Ingredient> filteredIngredients = ingredients.stream()
+        // 저장한 재료들 중에서 소비기한 임박한 재료 찾기
+        /*List<Ingredient> filteredIngredients = ingredients.stream()
                 .filter(ingredient -> {
                     LocalDate expire = ingredient.getPeriod();
                     LocalDate now = LocalDate.now();
                     int days = Period.between(now, expire).getDays();
                     return days >= 0 && days <= 3;
-                }).collect(Collectors.toList());
+                }).collect(Collectors.toList());*/
+        List<Ingredient> filteredIngredients = new ArrayList<>();
+        List<Ingredient> notOutdatedIngredients = new ArrayList<>();
+        ingredients.forEach(ingredient -> {
+            LocalDate expire = ingredient.getPeriod();
+            LocalDate now = LocalDate.now();
+            int days = Period.between(now, expire).getDays();
+            if (days >= 0 && days <= 3) { // 임박 재료일 경우
+                filteredIngredients.add(ingredient);
+            }
+            if (days > 3) { // 일반 재료일 경우
+                notOutdatedIngredients.add(ingredient);
+            }
+        });
 
         List<Ingredient> resultIngredients;
         if (filteredIngredients.isEmpty()) {
             // 임박 재료 없음 최대 8개
-            resultIngredients = new ArrayList<>(ingredients.subList(0, Math.min(ingredients.size(), 8)));
+            if (recommendRequest.getIsOutdatedOk()) { // 소비기한 지나도 포함 ok
+                log.info("outdated ok");
+                resultIngredients = new ArrayList<>(ingredients.subList(0, Math.min(ingredients.size(), MAX_RECIPE_SIZE)));
+            } else {
+                log.info("outdated not ok");
+                if (notOutdatedIngredients.isEmpty()) {
+                    log.info("but empty");
+                    return randomRecommendationStrategy.recommend(ingredients);
+                }
+                resultIngredients = new ArrayList<>(notOutdatedIngredients.subList(0, Math.min(notOutdatedIngredients.size(), MAX_RECIPE_SIZE)));
+            }
         } else {
             // 임박 재료 있음 최대 8개
-            resultIngredients = new ArrayList<>(filteredIngredients.subList(0, Math.min(filteredIngredients.size(), 8)));
+            resultIngredients = new ArrayList<>(filteredIngredients.subList(0, Math.min(filteredIngredients.size(), MAX_RECIPE_SIZE)));
         }
-        return recommendAlgorithm(resultIngredients);
+        return normalRecommendationStrategy.recommend(resultIngredients);
     }
 
     @Transactional(readOnly = true)
